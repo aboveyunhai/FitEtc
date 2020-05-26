@@ -1,30 +1,36 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import ClockCircle from '../components/ClockCircle';
 import RunCircle from '../components/RunCircle';
+import { DailyButton } from '../components/UpdateButton';
 import { AppColor } from '../constants/AppConstant';
-import DefaultView from '../components/AppView';
+import AppView from '../components/AppView';
 
 declare var global: {HermesInternal: null | {}};
-
+/***
+* HomeScreen component
+*/
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={{ color: "#ffffff"}}>Engine: Hermes</Text>
-            </View>
-          )}
-
-        <DefaultView style={[styles.widgetContainer, {flexDirection: 'row-reverse'}]} >
-          {({width, height}) => <ClockCircle size={ width < height? width : height }/>}
-        </DefaultView>
       {
-        <DefaultView style={styles.mainContainer}>
+        global.HermesInternal == null ? null : (
+          <View style={styles.engine}>
+            <Text style={{ color: "#ffffff"}}>Engine: Hermes</Text>
+          </View>
+        )
+      }
+        <View style={{flex: 1, flexDirection: "row", justifyContent:"space-between"}}>
+          <DailyButton />
+          <AppView style={styles.widgetContainer} >
+            {({width, height}) => <ClockCircle size={ width < height? width : height }/>}
+          </AppView>
+        </View>
+      {
+        <AppView style={styles.mainContainer}>
           { ({width, height}) => <RunCircle size={ width < height? width : height }/> }
-        </DefaultView>
+        </AppView>
       }
     </View>
   )
@@ -46,9 +52,9 @@ const styles = StyleSheet.create({
     flex: 1,
     // borderWidth: 1, borderColor: "white"
   },
-
   engine: {
     position: 'absolute',
     right: 0,
+    zIndex: 1,
   },
 });

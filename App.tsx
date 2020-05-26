@@ -9,29 +9,19 @@
  */
 
 import React, { useEffect } from 'react';
-import {
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-} from 'react-native';
+import { Provider } from 'react-redux';
 
 import AppNavigator from './src/navigation/AppNavigator';
+import appStore from './src/redux/store/AppStore';
 
 const App = () => {
   return (
     <>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
-        <AppNavigator />
-      </SafeAreaView>
+        <Provider store={appStore}>
+          <AppNavigator />
+        </Provider>
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;

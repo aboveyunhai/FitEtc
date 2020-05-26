@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, StyleProp, View } from 'react-native';
+import { StyleSheet, StyleProp, Text, View } from 'react-native';
 import { Circle, Defs, RadialGradient, Stop, Svg } from 'react-native-svg';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 

@@ -54,7 +54,7 @@ type Props = {
 
 const Tab = createBottomTabNavigator();
 
-function getHeaderTitle(route) {
+function getHeaderTitle(route: any) {
   const routeName = route.state
   ?
     route.state.routes[route.state.index].name
@@ -68,7 +68,7 @@ function getHeaderTitle(route) {
   }
 }
 
-type tabBarIconProps ={
+type tabBarIconProps = {
   focused: boolean;
   color: string;
   size: number;
