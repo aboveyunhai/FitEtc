@@ -37,6 +37,7 @@ export class UpdateButton extends React.Component<ButtonProps, ButtonState> {
   render(){
     return(
       <View style={styles.container}>
+          <Text style={styles.description}>DAILY OBJECTIVE</Text>
           <TextInput
             style={{ textAlign: 'center', color: AppColor.highlightOrange, fontSize: 20}}
             keyboardType={"numeric"}
@@ -57,6 +58,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+  },
+  description: {
+    textAlign: 'center',
+    color: AppColor.highlightBlue,
+    // fontFamily: 'Oxanium',
+    // fontWeight: 'bold',
   },
   button: {
     padding: 5,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, StyleSheet, StyleProp, Text, View } from 'react-native';
+import { Alert, StyleSheet, StyleProp, Text, View, PermissionsAndroid } from 'react-native';
 import { connect } from 'react-redux';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 // import Pedometer from '@JWWon/react-native-universal-pedometer';
@@ -9,6 +9,7 @@ import DefaultText from '../components/AppText';
 import { AppColor } from '../constants/AppConstant';
 import { Circle } from 'react-native-svg';
 
+const STEP_SOURCE = "com.google.android.gms:estimated_steps";
 
 interface RunProp {
   style?: StyleProp<{}>;
@@ -31,7 +32,7 @@ const runOptions = {
 };
 
 class RunCircle extends React.Component<RunProp,RunState> {
-
+  timerID: number = 0;
   constructor(props: Readonly<any>){
     super(props);
     this.state = {
@@ -41,29 +42,44 @@ class RunCircle extends React.Component<RunProp,RunState> {
     }
   }
 
+  requestApiStep = () => {
+      const date = new Date(2020, 4, 25);
+      const today = date.toISOString().split('T')[0];// YYYY-MM-DD format
+
+      GoogleFit.getDailySteps()
+       .then((res:any) => {
+         // result => [{"source": "com.google.android.gms:estimated_steps", "steps": [[Object]]}]
+         // steps => [{"date": "currentDate", "value": number}]
+         const result = res.filter( (data:any) => data.source === STEP_SOURCE);
+         let res_step = 0;
+
+         if (result[0].steps.length > 0) {
+           res_step = (result[0].steps)[0].value;
+         }
+         this.setState({
+           currentStepCount: res_step,
+         })
+         // console.log("Details >>", res.map( (data:any) => data.steps ));
+
+       })
+       .catch((err: any) => {console.warn(err)})
+  }
+
   _subscribe = () => {
     // authentication
     GoogleFit.authorize(runOptions)
     .then(authResult => {
       if(authResult.success) {
-        const options = {
-          startDate: "2017-01-01T00:00:17.971Z", // required ISO8601Timestamp
-          endDate: new Date().toISOString() // required ISO8601Timestamp
-        };
 
-        GoogleFit.startRecording( (callback)=> {
+        GoogleFit.startRecording( callback => {
           console.log(callback);
            // Process data from Google Fit Recording API (no google fit app needed)
-         });
+         }, ['step']);
 
-
-        setInterval( () => {
-        GoogleFit.getDailyStepCountSamples(options)
-         .then((res) => {
-             console.log('Daily steps >>> ', res.map( data => data.steps ));
-         })
-         .catch((err) => {console.warn(err)})
-       }, 10000);
+         this.requestApiStep();
+         this.timerID = setInterval(() => {
+           this.requestApiStep();
+         }, 20* 1000);
 
       }else{
         Alert.alert("AUTH_DENIED", authResult.message);
@@ -91,6 +107,7 @@ class RunCircle extends React.Component<RunProp,RunState> {
   }
 
   _unsubscribe = () => {
+    clearInterval(this.timerID);
   }
 
   componentDidMount() {
