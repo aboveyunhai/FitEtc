@@ -1,8 +1,10 @@
 import React from 'react';
-import { Alert, StyleSheet, StyleProp, Text, View, PermissionsAndroid } from 'react-native';
+import { Alert, StyleSheet, StyleProp, Text, View } from 'react-native';
 import { connect } from 'react-redux';
+import { Defs, RadialGradient, Stop } from 'react-native-svg';
+
+import moment from 'moment';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-// import Pedometer from '@JWWon/react-native-universal-pedometer';
 import GoogleFit, { Scopes } from 'react-native-google-fit';
 
 import DefaultText from '../components/AppText';
@@ -43,10 +45,15 @@ class RunCircle extends React.Component<RunProp,RunState> {
   }
 
   requestApiStep = () => {
-      const date = new Date(2020, 4, 25);
-      const today = date.toISOString().split('T')[0];// YYYY-MM-DD format
+      const today = moment();
+      // const today = date.toISOString().split('T')[0];// YYYY-MM-DD format
 
-      GoogleFit.getDailySteps()
+      const dailyOptions = {
+        startDate: moment(today).startOf('day'),
+        endDate: moment(today).endOf('day'),
+      }
+
+      GoogleFit.getDailyStepCountSamples(dailyOptions)
        .then((res:any) => {
          // result => [{"source": "com.google.android.gms:estimated_steps", "steps": [[Object]]}]
          // steps => [{"date": "currentDate", "value": number}]
@@ -79,7 +86,7 @@ class RunCircle extends React.Component<RunProp,RunState> {
          this.requestApiStep();
          this.timerID = setInterval(() => {
            this.requestApiStep();
-         }, 20* 1000);
+         }, 10 * 1000);
 
       }else{
         Alert.alert("AUTH_DENIED", authResult.message);
@@ -135,9 +142,21 @@ class RunCircle extends React.Component<RunProp,RunState> {
           backgroundWidth={3}
           dashedBackground={{ width: 3, gap: 8 }}
           backgroundColor={AppColor.highlightBlueL}
-          renderCap={({ center }) => <Circle cx={center.x} cy={center.y} r="8" fill={AppColor.highlightBlue} />}
+          renderCap={
+            ({ center }) =>
+            <>
+              <Defs>
+                <RadialGradient id='grad' gradientUnits="userSpaceOnUse">
+                  <Stop offset={(fill/100) > 1 ? 1 : (fill/100)} stopColor={AppColor.highlightGreen} />
+                  <Stop offset="1" stopColor={AppColor.highlightBlueD} />
+                </RadialGradient>
+              </Defs>
+              <Circle cx={center.x} cy={center.y} r="8" fill="url(#grad)" />
+            </>
+          }
           fill={fill}
           tintColor={AppColor.highlightBlueD}
+          tintColorSecondary={AppColor.highlightGreen}
           lineCap="round"
           duration={1000}
         >
