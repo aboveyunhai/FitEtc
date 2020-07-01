@@ -15,11 +15,11 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       {
-        global.HermesInternal == null ? null : (
-          <View style={styles.engine}>
-            <Text style={{ color: "#ffffff"}}>Engine: Hermes</Text>
-          </View>
-        )
+          __DEV__ && global.HermesInternal == null ? null : (
+            <View style={styles.engine}>
+              <Text style={{ color: "#ffffff"}}>Engine: Hermes</Text>
+            </View>
+          )
       }
         <View style={{flex: 1, flexDirection: "row", justifyContent:"space-between"}}>
           <DailyButton />
@@ -40,13 +40,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: AppColor.componentColor,
+    backgroundColor: AppColor.baseColor,
   },
   mainContainer: {
     flex: 2.5,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1, borderColor: "white"
+    borderWidth: .5,
+    borderColor: "#ffffff"
   },
   widgetContainer: {
     flex: 1,
