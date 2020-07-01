@@ -1,18 +1,22 @@
 import React from 'react';
-import { Platform } from 'react-native';
+import { Button, Platform } from 'react-native';
 
-import { RouteProp } from '@react-navigation/native';
-import { createStackNavigator, StackNavigationProp } from '@react-navigation/stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
 import SettingScreen from '../screens/SettingScreen';
+import { ReloadButton } from '../components/UpdateButton';
 
 import { AppColor } from '../constants/AppConstant';
 
-// import { TabBar } from './createAnimatedBottomTabNavigtor';
+type tabBarIconProps = {
+  focused: boolean;
+  color: string;
+  size: number;
+}
 
 const tabConfig = {
     tabBarOptions: {
@@ -36,31 +40,12 @@ const MainStackOptions =  {
     borderBottomWidth: 0.3,
     borderColor: AppColor.highlightBlue,
   },
-  headerTintColor: '#ffffff'
-};
-
-type MainStackParamList = {
-  Home: undefined;
-  Statistics: undefined;
-  Setting: undefined;
-}
-type MainStackRouteProp = RouteProp<MainStackParamList, 'Home'>;
-type MainStackNavigationProp = StackNavigationProp<MainStackParamList, 'Home'>;
-
-type Props = {
-  route: MainStackRouteProp;
-  navigation: MainStackNavigationProp
+  headerTintColor: '#ffffff',
 };
 
 const Tab = createBottomTabNavigator();
 
-function getHeaderTitle(route: any) {
-  const routeName = route.state
-  ?
-    route.state.routes[route.state.index].name
-  :
-    route.params?.screen || 'Home';
-
+function getHeaderTitle(routeName: string) {
   switch (routeName) {
     case 'Home': return 'Home';
     case 'Statistics': return 'Statistics';
@@ -68,15 +53,24 @@ function getHeaderTitle(route: any) {
   }
 }
 
-type tabBarIconProps = {
-  focused: boolean;
-  color: string;
-  size: number;
+function setHeaderRight(routeName: string) {
+  switch (routeName) {
+    case 'Home': return;
+    case 'Statistics': return () => ( <ReloadButton /> );
+    case 'Setting': return;
+  }
 }
 
-function MainTabs({ navigation, route }: Props) {
+function MainTabs({ navigation, route } :any) {
+  const routeName = route.state
+  ? route.state.routes[route.state.index].name
+  : route.params?.screen || 'Home';
+
   React.useLayoutEffect(() => {
-    navigation.setOptions({ headerTitle: getHeaderTitle(route) });
+    navigation.setOptions({
+      headerTitle: getHeaderTitle(routeName),
+      headerRight: setHeaderRight(routeName),
+    });
   }, [navigation, route]);
 
   return (

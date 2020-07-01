@@ -7,12 +7,19 @@ import {
 import { NavigationContainer } from '@react-navigation/native';
 
 import MainTabNavigator from './MainTabNavigator';
+import { isMountedRef, navigationRef } from './NavigationService';
 
 export default function AppNavigation() {
+  React.useEffect(() => {
+      isMountedRef.current = true;
+
+      return () => (isMountedRef.current = false);
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef} >
           <MainTabNavigator/>
         </NavigationContainer>
     </SafeAreaView>
