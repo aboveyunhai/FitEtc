@@ -5,17 +5,25 @@ const tintColor = '#58afef';
 const baseColor = "#21252b"
 const componentColor = "#282c34";
 const opa80 = 'CC', opa60 = '99', opa40 = '66', opa20 = '33';
+const grey = '#abb2bf';
 const highlightBlue = '#58afef';
 const highlightBlGr = '#56b6c2';
 const highlightGreen = '#73c990';
 const highlightOrange = '#e5c07b';
 const highlightPurple = '#c678dd';
+const white = '#ffffff';
+const shadow = '#273240'
 
 const AppColor = {
   tintColor, baseColor, componentColor,
   opa80, opa60, opa40, opa20,
-  highlightBlue, highlightBlueL: highlightBlue+opa20,
-  highlightGreen, highlightOrange,
+  white,
+  grey,
+  shadow,
+  highlightBlue,
+  highlightBlueL: highlightBlue+opa20,
+  highlightGreen,
+  highlightOrange,
   highlightBlueD: highlightBlue+opa80,
   tabIconDefault: '#5c6366',
   tabIconSelected: tintColor,
