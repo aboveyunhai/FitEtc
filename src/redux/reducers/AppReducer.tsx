@@ -1,6 +1,8 @@
 import { combineReducers } from 'redux';
-import { runCircleReducer } from './RunCircleReducer';
+import * as reducerType from './stepDataReducer';
 
 export default combineReducers({
-  runReducer: runCircleReducer,
+  runReducer: reducerType.runCircleReducer,
+  stepWeeklyReducer: reducerType.stepWeeklyReducer,
+  stepMonthlyReducer: reducerType.stepMonthlyReducer,
 });

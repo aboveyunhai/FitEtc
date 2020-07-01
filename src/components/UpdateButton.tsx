@@ -1,12 +1,15 @@
 import React from 'react';
-import { StyleSheet, TextInput, Text, View } from 'react-native';
+import { Animated, Easing, StyleSheet, Text, TextInput, View } from 'react-native';
 import Button from 'react-native-button';
+import Icon from 'react-native-vector-icons/AntDesign';
 import { connect } from 'react-redux';
 
 import { AppColor } from '../constants/AppConstant';
-import { setGoal } from '../redux/actions/ActionCreator';
+import { setGoal, reloadWeekly, reloadMonthly } from '../redux/actions/ActionCreator';
+import * as NavigationService from '../navigation/NavigationService'
+import { StatProps } from '../screens/StatisticsScreen';
 
-interface ButtonState {
+interface UpdateButtonState {
   newGoal: string,
 };
 
@@ -14,7 +17,16 @@ interface ButtonProps {
   setGoal: (arg: string) => string;
 }
 
-export class UpdateButton extends React.Component<ButtonProps, ButtonState> {
+interface ReloadButtonState {
+  isButtonEnable: boolean
+}
+
+interface ReloadProps {
+  reloadMonthly: () => void;
+  reloadWeekly: () => void;
+}
+
+export class UpdateButton extends React.Component<ButtonProps, UpdateButtonState> {
   constructor(props: Readonly<ButtonProps>) {
     super(props);
     this.state = {
@@ -25,8 +37,9 @@ export class UpdateButton extends React.Component<ButtonProps, ButtonState> {
   onChangeText(text : string) {
     //accept number(whole number)string only
     const value = text.replace(/[^0-9]/gi, '');
+    const newGoal = (parseInt(value) <=0) ? this.state.newGoal || '1' : value;
     this.setState({
-      newGoal: value,
+      newGoal: newGoal,
     });
   }
 
@@ -46,11 +59,79 @@ export class UpdateButton extends React.Component<ButtonProps, ButtonState> {
             onChangeText = { (text) => this.onChangeText(text) }
             value={ this.state.newGoal }
           />
-        <Button style={styles.button}onPress={()=>this.updateGoal()}>
+        <Button style={styles.button} onPress={()=>this.updateGoal()}>
           UPDATE
         </Button>
       </View>
     );
+  }
+}
+
+
+/***
+* button related to Statistics Screen
+*/
+
+export class RefreshButton extends React.Component<ReloadProps, ReloadButtonState> {
+
+  constructor(props: Readonly<any>){
+    super(props);
+    this.state = {
+        isButtonEnable: true
+    }
+  }
+
+  spinValue = new Animated.Value(0);
+
+  loading() {
+    if(!this.state.isButtonEnable) return;
+    this.spinValue.setValue(0);
+    Animated.timing(
+      this.spinValue,
+      {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }
+    ).start();
+
+    const route = NavigationService.getCurrentRoute();
+    const routeName = route.name;
+    switch (routeName) {
+      case 'Recent':
+        this.props.reloadWeekly();
+        this.props.reloadMonthly();
+        break;
+      case 'Overall':
+       break;
+      default:
+        //nothing
+    }
+  }
+
+  render() {
+    const spin = this.spinValue.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '360deg']
+    });
+
+    return (
+      <Animated.View
+        style={{
+          marginRight: 15,
+          transform: [{ rotate: spin }]
+        }}
+      >
+        <Icon
+          name='sync'
+          size={20}
+          onPress= {() => this.loading()}
+          style={{
+            color: AppColor.grey,
+        }}/>
+      </Animated.View>
+  );
   }
 }
 
@@ -86,4 +167,12 @@ const mapDispatchToProps = (dispatch: any) => {
   }
 };
 
+const mapReloadToProps = (dispatch: any) => {
+  return {
+    reloadWeekly: () => dispatch(reloadWeekly()),
+    reloadMonthly: () => dispatch(reloadMonthly())
+  }
+}
+
 export const DailyButton = connect(null, mapDispatchToProps)(UpdateButton);
+export const ReloadButton = connect(null, mapReloadToProps)(RefreshButton);
