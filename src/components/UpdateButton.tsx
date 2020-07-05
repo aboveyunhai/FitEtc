@@ -83,8 +83,14 @@ export class RefreshButton extends React.Component<ReloadProps, ReloadButtonStat
 
   spinValue = new Animated.Value(0);
 
+  // refresh data
   loading() {
+    //prevent multiple clicking
     if(!this.state.isButtonEnable) return;
+    this.setState({
+      isButtonEnable: false
+    })
+
     this.spinValue.setValue(0);
     Animated.timing(
       this.spinValue,
@@ -94,7 +100,11 @@ export class RefreshButton extends React.Component<ReloadProps, ReloadButtonStat
         easing: Easing.linear,
         useNativeDriver: true,
       }
-    ).start();
+    ).start(() => {
+      this.setState({
+        isButtonEnable: true
+      })
+    });
 
     const route = NavigationService.getCurrentRoute();
     const routeName = route.name;
