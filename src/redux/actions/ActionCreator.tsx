@@ -69,7 +69,6 @@ export const reloadWeekly = () => {
 export const reloadMonthly = () => {
   const today = moment();
   const endDate = moment(today).endOf('week').add(1, 'days');
-
   return (dispatch: any) => {
     requestMonthly(today).then
     ((response: any) => {
@@ -100,6 +99,10 @@ function requestWeekly(today: moment.Moment) {
   const options = {
     startDate: moment(today).startOf('week'),
     endDate: moment(today).endOf('week'),
+    configs:{
+      bucketTime: 1,
+      bucketUnit: 'DAY'
+    }
   }
 
   return GoogleFit.getDailyStepCountSamples(options);
@@ -111,6 +114,10 @@ function requestMonthly(today: moment.Moment) {
   const options = {
     startDate: startDate,
     endDate: endDate,
+    configs:{
+      bucketTime: 1,
+      bucketUnit: 'DAY'
+    }
   }
 
   return GoogleFit.getDailyStepCountSamples(options);
