@@ -7,6 +7,7 @@ import { BarChart, ContributionGraph } from 'react-native-chart-kit';
 
 import { AppColor } from '../constants/AppConstant';
 import AppText from '../components/AppText';
+import { HeaderTag } from '../components/HeaderTag';
 import { reloadWeekly, reloadMonthly } from '../redux/actions/ActionCreator';
 
 const WEEK_OFFSET = 105; // 15 weeks includes currentWeek
@@ -45,7 +46,7 @@ const barChartConfig = {
   useShadowColorFromDataset: false,
   decimalPlaces: 0,
   chartStyle: {
-    borderRadius: 10,
+    borderRadius: 5,
     paddingTop: 10,
     // paddingBottom: 10,
     // paddingLeft: 20,
@@ -68,33 +69,36 @@ const contributionChartConfig = {
     // paddingBottom: 10,
     justifyContent: 'start',
     alignItems: 'center',
-    borderRadius: 10,
+    borderRadius: 5,
   }
 }
 
 class WeeklyChart extends React.Component<WeeklyProps> {
   render() {
     return (
-      <BarChart
-        style={styles.chartContainerStyle}
-        chartConfig={barChartConfig}
-        data={{
-          labels: this.props.labels,
-          datasets: [
-            {
-             data: this.props.data
-           },
-          ],
-        }}
-        width={SCREEN_WIDTH*.9}
-        height={GRAPH_HEIGHT}
-        yAxisLabel=""
-        yAxisSuffix=""
-        showValuesOnTopOfBars={true}
-        defMin={0}
-        defMax={this.props.defMax}
-        segments={6}
-      />
+      <>
+        <HeaderTag tagLabel={'W'} headerContent={this.props.data.reduce((x, y) => x + y, 0) / this.props.data.length} />
+        <BarChart
+          style={styles.chartContainerStyle}
+          chartConfig={barChartConfig}
+          data={{
+            labels: this.props.labels,
+            datasets: [
+              {
+               data: this.props.data
+             },
+            ],
+          }}
+          width={SCREEN_WIDTH*.9}
+          height={GRAPH_HEIGHT}
+          yAxisLabel=""
+          yAxisSuffix=""
+          showValuesOnTopOfBars={true}
+          defMin={0}
+          defMax={this.props.defMax}
+          segments={6}
+        />
+      </>
     );
   }
 }
@@ -125,22 +129,33 @@ class MonthlyChart extends React.Component<MonthlyProps> {
     )
   }
 
+   getAverage = (data: Array<{date: string, value: string}>) => {
+     const dataSize = data.length || 1;
+     return data.reduce((total: number, item: {date: string, value: string}) => total + parseInt(item.value), 0) / dataSize;
+   }
+
   render() {
     return (
-      <ContributionGraph
-        style={styles.chartContainerStyle}
-        values={this.props.data}
-        endDate={new Date(this.props.endDate)}
-        numDays={WEEK_OFFSET}
-        width={SCREEN_WIDTH*.9}
-        height={GRAPH_HEIGHT}
-        chartConfig={contributionChartConfig}
-        toggleTooltip={true}
-        tooltipContent={this.tooltipContent}
-        accessor={'value'}
-        squareSize={20}
-        // horizontal={false}
-      />
+      <>
+        <HeaderTag
+          tagLabel={'M'}
+          headerContent={this.getAverage(this.props.data)}
+        />
+        <ContributionGraph
+          style={styles.chartContainerStyle}
+          values={this.props.data}
+          endDate={new Date(this.props.endDate)}
+          numDays={WEEK_OFFSET}
+          width={SCREEN_WIDTH*.9}
+          height={GRAPH_HEIGHT}
+          chartConfig={contributionChartConfig}
+          toggleTooltip={true}
+          tooltipContent={this.tooltipContent}
+          accessor={'value'}
+          squareSize={20}
+          // horizontal={false}
+        />
+      </>
     )
   }
 }
@@ -155,14 +170,11 @@ class Analysis extends React.Component<StatProps> {
   render() {
     return (
       <View style={{paddingTop:10}}>
-        <AppText style={styles.header}>Weekly Activity</AppText>
         {
           this.props.isLoading[0]
           ? <View style={styles.indicatorContainer}><ActivityIndicator /></View>
           : <WeeklyChart defMax={this.props.weekly.defMax} data={this.props.weekly.data} labels={this.props.weekly.labels}/>
         }
-
-        <AppText style={styles.header}>Monthly Activity</AppText>
         {
           this.props.isLoading[1]
           ? <View style={styles.indicatorContainer}><ActivityIndicator /></View>
@@ -173,6 +185,7 @@ class Analysis extends React.Component<StatProps> {
   };
 }
 
+//connect to redux
 const mapStateToProps = (state: any) => {
   return {
     weekly: state.stepWeeklyReducer.weekly,
@@ -190,30 +203,9 @@ const mapDispatchToProps = (dispatch: any) => {
 };
 
 const RecentScreen = connect(mapStateToProps, mapDispatchToProps)(Analysis);
+
+// navigation
 const Tab = createMaterialTopTabNavigator();
-
-function RecentHistory() {
-  return (
-      <ScrollView style={styles.container}>
-        <RecentScreen />
-      </ScrollView>
-  )
-}
-
-function OverallHistory() {
-  return (
-    <View style={styles.container}>
-    </View>
-  )
-}
-
-function LoadingScreen() {
-  return (
-    <View style={[styles.container, { justifyContent: 'center', alignContent: 'center'}]}>
-      <Text>Loading...</Text>
-    </View>
-  )
-}
 
 const TabProps = {
   lazy: true,
@@ -232,6 +224,29 @@ const TabProps = {
     },
     activeTintColor: AppColor.white,
   }
+}
+
+function RecentHistory() {
+  return (
+    <ScrollView style={styles.container}>
+      <RecentScreen />
+    </ScrollView>
+  )
+}
+
+function OverallHistory() {
+  return (
+    <View style={styles.container}>
+    </View>
+  )
+}
+
+function LoadingScreen() {
+  return (
+    <View style={[styles.container, { justifyContent: 'center', alignContent: 'center'}]}>
+      <Text>Loading...</Text>
+    </View>
+  )
 }
 
 export default function StatisticsScreen() {
