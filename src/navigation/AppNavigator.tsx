@@ -8,6 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 
 import MainTabNavigator from './MainTabNavigator';
 import { isMountedRef, navigationRef } from './NavigationService';
+import { AppColor } from '../constants/AppConstant';
 
 export default function AppNavigation() {
   React.useEffect(() => {
@@ -18,7 +19,7 @@ export default function AppNavigation() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar backgroundColor={AppColor.componentColor} barStyle="light-content" />
         <NavigationContainer ref={navigationRef} >
           <MainTabNavigator/>
         </NavigationContainer>

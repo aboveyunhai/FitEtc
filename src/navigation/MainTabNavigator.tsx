@@ -1,16 +1,19 @@
 import React from 'react';
-import { Button, Platform } from 'react-native';
+import { ActivityIndicator, Platform, View } from 'react-native';
 
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
 import SettingScreen from '../screens/SettingScreen';
 import { ReloadButton } from '../components/UpdateButton';
-
 import { AppColor } from '../constants/AppConstant';
+import TabBarIcon from '../components/TabBarIcon';
+
+
+import { connect } from 'react-redux';
+import { reloadWeekly, reloadMonthly }from '../redux/actions/ActionCreator';
 
 type tabBarIconProps = {
   focused: boolean;
@@ -18,16 +21,32 @@ type tabBarIconProps = {
   size: number;
 }
 
+function LoadingScreen() {
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: AppColor.baseColor,
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <ActivityIndicator size="large" color={AppColor.white}/>
+    </View>
+  )
+}
+
 const tabConfig = {
+    lazy: true,
+    lazyPlaceholder: LoadingScreen,
     tabBarOptions: {
       // showIcon: false,
       // showLabel: false,
-      activeBackgroundColor: AppColor.highlightBlueL,
+      // activeBackgroundColor: AppColor.highlightBlueL,
       labelStyle: {
         fontWeight: "bold" as const,
       },
       style: {
-        backgroundColor: AppColor.baseColor,
+        backgroundColor: AppColor.baseDarkColor,
+        borderTopWidth: 0.01,
       },
       activeTintColor: AppColor.tabIconSelected,
       inactiveTintColor: AppColor.tabIconDefault
@@ -36,9 +55,13 @@ const tabConfig = {
 
 const MainStackOptions =  {
   headerStyle: {
+    height: 45,
     backgroundColor: AppColor.baseColor,
-    borderBottomWidth: 0.3,
+    borderBottomWidth: 0.2,
     borderColor: AppColor.highlightBlue,
+  },
+  headerTitleStyle: {
+    // fontWeight: 'bold'
   },
   headerTintColor: '#ffffff',
 };
@@ -61,7 +84,7 @@ function setHeaderRight(routeName: string) {
   }
 }
 
-function MainTabs({ navigation, route } :any) {
+function MainTabs({ navigation, route, reloadWeekly, reloadMonthly } :any) {
   const routeName = route.state
   ? route.state.routes[route.state.index].name
   : route.params?.screen || 'Home';
@@ -71,11 +94,19 @@ function MainTabs({ navigation, route } :any) {
       headerTitle: getHeaderTitle(routeName),
       headerRight: setHeaderRight(routeName),
     });
+
+    // note that this will trig all nested items rerender
+    // without explicted state check in componentwillupdate
+    if(routeName === 'Statistics') {
+      reloadWeekly();
+      reloadMonthly();
+    }
+
   }, [navigation, route]);
 
   return (
     <Tab.Navigator
-      screenOptions={ ({ route }) => ({
+      screenOptions={ ({ navigation, route }) => ({
         tabBarIcon: ({ focused, color, size } : tabBarIconProps) => {
           let iconName;
 
@@ -87,7 +118,9 @@ function MainTabs({ navigation, route } :any) {
             iconName = (Platform.OS === 'ios') ? 'setting' : 'setting';
           }
 
-          return <TabBarIcon focused={focused} name={iconName} size={26} />
+          return (
+            <TabBarIcon focused={focused} name={iconName} size={26} />
+          )
         },
       })}
       {...tabConfig}
@@ -99,12 +132,21 @@ function MainTabs({ navigation, route } :any) {
   );
 }
 
+const mapReloadToProps = (dispatch: any) => {
+  return {
+    reloadWeekly: () => dispatch(reloadWeekly()),
+    reloadMonthly: () => dispatch(reloadMonthly())
+  }
+}
+
+const MainTabsConnect = connect(null, mapReloadToProps)(MainTabs);
+
 const MainStack = createStackNavigator();
 
 export default function MainTabNavigator() {
   return (
     <MainStack.Navigator screenOptions={MainStackOptions}>
-      <MainStack.Screen name="Main" component={MainTabs} />
+      <MainStack.Screen name="Main" component={MainTabsConnect} />
     </MainStack.Navigator>
   );
 }

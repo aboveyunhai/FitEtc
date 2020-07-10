@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import { AppColor } from '../constants/AppConstant';
 import { setGoal, reloadWeekly, reloadMonthly } from '../redux/actions/ActionCreator';
 import * as NavigationService from '../navigation/NavigationService'
-import { StatProps } from '../screens/StatisticsScreen';
+import AsyncStorage from '@react-native-community/async-storage';
 
 interface UpdateButtonState {
   newGoal: string,
@@ -45,6 +45,22 @@ export class UpdateButton extends React.Component<ButtonProps, UpdateButtonState
 
   updateGoal() {
     this.props.setGoal(this.state.newGoal);
+  }
+
+  componentDidMount() {
+    (async () => {
+      try {
+        const value = await AsyncStorage.getItem('@storage_dailyGoal');
+        // console.log(value);
+        if(value !== null) {
+          this.setState({
+            newGoal: value
+          })
+        }
+      } catch(e) {
+        // error reading value
+      }
+    })();
   }
 
   render(){

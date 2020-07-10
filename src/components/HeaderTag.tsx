@@ -9,7 +9,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 export const HeaderTag = (props: any) => {
   const tagSize = 25;
   const header_H = 40*0.75;
-  const header_W = SCREEN_WIDTH/3;
+  const header_W = SCREEN_WIDTH/2.5;
   const x_Offset = 8, y_Offset = 5;
   return (
     <View style={styles.header}>
@@ -27,8 +27,9 @@ export const HeaderTag = (props: any) => {
           y={y_Offset + header_H/2}
           alignmentBaseline="central"
           fill={AppColor.highlightBlue}
+          fontSize={14}
         >
-          { "Avg: " + Math.ceil(props.headerContent) }
+          { "Avg: " + props.headerContent }
         </Text>
         <Rect
           x={0}
