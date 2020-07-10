@@ -9,8 +9,11 @@ import HomeScreen from '../screens/HomeScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
 import SettingScreen from '../screens/SettingScreen';
 import { ReloadButton } from '../components/UpdateButton';
-
 import { AppColor } from '../constants/AppConstant';
+
+
+import { connect } from 'react-redux';
+import { reloadWeekly, reloadMonthly }from '../redux/actions/ActionCreator';
 
 type tabBarIconProps = {
   focused: boolean;
@@ -61,7 +64,7 @@ function setHeaderRight(routeName: string) {
   }
 }
 
-function MainTabs({ navigation, route } :any) {
+function MainTabs({ navigation, route, reloadWeekly, reloadMonthly } :any) {
   const routeName = route.state
   ? route.state.routes[route.state.index].name
   : route.params?.screen || 'Home';
@@ -71,6 +74,14 @@ function MainTabs({ navigation, route } :any) {
       headerTitle: getHeaderTitle(routeName),
       headerRight: setHeaderRight(routeName),
     });
+
+    // note that this will trig all nested items rerender
+    // without explicted state check in componentwillupdate
+    if(routeName === 'Statistics') {
+      reloadWeekly();
+      reloadMonthly();
+    }
+
   }, [navigation, route]);
 
   return (
@@ -99,12 +110,21 @@ function MainTabs({ navigation, route } :any) {
   );
 }
 
+const mapReloadToProps = (dispatch: any) => {
+  return {
+    reloadWeekly: () => dispatch(reloadWeekly()),
+    reloadMonthly: () => dispatch(reloadMonthly())
+  }
+}
+
+const MainTabsConnect = connect(null, mapReloadToProps)(MainTabs);
+
 const MainStack = createStackNavigator();
 
 export default function MainTabNavigator() {
   return (
     <MainStack.Navigator screenOptions={MainStackOptions}>
-      <MainStack.Screen name="Main" component={MainTabs} />
+      <MainStack.Screen name="Main" component={MainTabsConnect} />
     </MainStack.Navigator>
   );
 }

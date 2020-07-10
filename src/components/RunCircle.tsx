@@ -6,7 +6,9 @@ import { Defs, RadialGradient, Stop } from 'react-native-svg';
 import moment from 'moment';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import GoogleFit, { Scopes } from 'react-native-google-fit';
+import AsyncStorage from '@react-native-community/async-storage';
 
+import { setGoal } from '../redux/actions/ActionCreator';
 import DefaultText from '../components/AppText';
 import { AppColor } from '../constants/AppConstant';
 import { Circle } from 'react-native-svg';
@@ -17,6 +19,7 @@ interface RunProp {
   style?: StyleProp<{}>;
   size: number;
   dailyGoal: number;
+  setGoal: (value:string) => void;
 }
 
 interface RunState {
@@ -51,6 +54,10 @@ class RunCircle extends React.Component<RunProp,RunState> {
       const dailyOptions = {
         startDate: moment(today).startOf('day'),
         endDate: moment(today).endOf('day'),
+        // configs:{
+        //   bucketTime: 15,
+        //   bucketUnit: 'MINUTE'
+        // }
       }
 
       GoogleFit.getDailyStepCountSamples(dailyOptions)
@@ -59,6 +66,14 @@ class RunCircle extends React.Component<RunProp,RunState> {
          // steps => [{"date": "currentDate", "value": number}]
          const result = res.filter( (data:any) => data.source === STEP_SOURCE);
          let res_step = 0;
+
+         // const rawSteps = result[0].rawSteps;
+         //
+         // if (rawSteps.length > 0) {
+         //   rawSteps.forEach( (item: any) => {
+         //     console.log(parseInt(moment(item.endDate).format("HH")), 'Step: ' + item.steps);
+         //   });
+         // }
 
          if (result[0].steps.length > 0) {
            res_step = (result[0].steps)[0].value;
@@ -117,14 +132,25 @@ class RunCircle extends React.Component<RunProp,RunState> {
     clearInterval(this.timerID);
   }
 
+  restoreState = async () => {
+    try {
+      const value = await AsyncStorage.getItem('@storage_dailyGoal');
+      if(value !== null) {
+        this.props.setGoal(value);
+      }
+    } catch(e) {
+      // error reading value
+    }
+  }
+
   componentDidMount() {
+    this.restoreState();
     this._subscribe();
   }
 
   componentWillUnmount() {
     this._unsubscribe();
   }
-
 
   render() {
     const fill: number = (this.state.currentStepCount /this.props.dailyGoal) * 100; // number: 0-100
@@ -190,7 +216,13 @@ const mapStateToProps = (state: any) => {
   }
 };
 
-export default connect(mapStateToProps, null)(RunCircle);
+const mapDispatchToProps = (dispatch: any) => {
+  return {
+    setGoal: (newGoal:string) => dispatch(setGoal(newGoal))
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(RunCircle);
 
 const styles = StyleSheet.create({
   points: {

@@ -1,16 +1,23 @@
 import * as types from './actionTypes';
 import GoogleFit from 'react-native-google-fit';
 import moment from 'moment';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const STEP_ESTIMATED = "com.google.android.gms:estimated_steps";
 const WEEK_OFFSET = 105; // 15 weeks includes currentWeek
 
 export const setGoal = (newGoal: string) => {
-  return {
-    type: types.SET_GOAL,
-    newGoal,
-  };
-};
+
+  return (dispatch: any) => {
+    AsyncStorage.setItem('@storage_dailyGoal', newGoal).then
+    (() => {
+      dispatch({
+        type: types.SET_GOAL,
+        newGoal,
+      })
+    }).catch((error: any) => {});
+  }
+}
 
 const getBaseLog = (x:number, y:number) => {
   return Math.log(y) / Math.log(x);
