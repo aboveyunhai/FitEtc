@@ -12,12 +12,14 @@ const highlightGreen = '#73c990';
 const highlightOrange = '#e5c07b';
 const highlightPurple = '#c678dd';
 const white = '#ffffff';
-const shadow = '#273240'
+const shadow = '#273240';
+const black = '#000000';
 
 const AppColor = {
   tintColor, baseColor, componentColor,
   opa80, opa60, opa40, opa20,
   white,
+  black,
   grey,
   shadow,
   highlightBlue,
