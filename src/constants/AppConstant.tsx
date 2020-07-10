@@ -3,6 +3,7 @@ import { Dimensions } from 'react-native';
 // Color
 const tintColor = '#58afef';
 const baseColor = "#21252b"
+const baseDarkColor = "#1d2026";
 const componentColor = "#282c34";
 const opa80 = 'CC', opa60 = '99', opa40 = '66', opa20 = '33';
 const grey = '#abb2bf';
@@ -16,7 +17,7 @@ const shadow = '#273240';
 const black = '#000000';
 
 const AppColor = {
-  tintColor, baseColor, componentColor,
+  tintColor, baseColor, baseDarkColor, componentColor,
   opa80, opa60, opa40, opa20,
   white,
   black,

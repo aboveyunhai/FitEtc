@@ -1,15 +1,15 @@
 import React from 'react';
-import { Button, Platform } from 'react-native';
+import { ActivityIndicator, Platform, View } from 'react-native';
 
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
 import StatisticsScreen from '../screens/StatisticsScreen';
 import SettingScreen from '../screens/SettingScreen';
 import { ReloadButton } from '../components/UpdateButton';
 import { AppColor } from '../constants/AppConstant';
+import TabBarIcon from '../components/TabBarIcon';
 
 
 import { connect } from 'react-redux';
@@ -21,16 +21,32 @@ type tabBarIconProps = {
   size: number;
 }
 
+function LoadingScreen() {
+  return (
+    <View style={{
+      flex: 1,
+      backgroundColor: AppColor.baseColor,
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <ActivityIndicator size="large" color={AppColor.white}/>
+    </View>
+  )
+}
+
 const tabConfig = {
+    lazy: true,
+    lazyPlaceholder: LoadingScreen,
     tabBarOptions: {
       // showIcon: false,
       // showLabel: false,
-      activeBackgroundColor: AppColor.highlightBlueL,
+      // activeBackgroundColor: AppColor.highlightBlueL,
       labelStyle: {
         fontWeight: "bold" as const,
       },
       style: {
-        backgroundColor: AppColor.baseColor,
+        backgroundColor: AppColor.baseDarkColor,
+        borderTopWidth: 0.01,
       },
       activeTintColor: AppColor.tabIconSelected,
       inactiveTintColor: AppColor.tabIconDefault
@@ -39,9 +55,13 @@ const tabConfig = {
 
 const MainStackOptions =  {
   headerStyle: {
+    height: 45,
     backgroundColor: AppColor.baseColor,
-    borderBottomWidth: 0.3,
+    borderBottomWidth: 0.2,
     borderColor: AppColor.highlightBlue,
+  },
+  headerTitleStyle: {
+    // fontWeight: 'bold'
   },
   headerTintColor: '#ffffff',
 };
@@ -86,7 +106,7 @@ function MainTabs({ navigation, route, reloadWeekly, reloadMonthly } :any) {
 
   return (
     <Tab.Navigator
-      screenOptions={ ({ route }) => ({
+      screenOptions={ ({ navigation, route }) => ({
         tabBarIcon: ({ focused, color, size } : tabBarIconProps) => {
           let iconName;
 
@@ -98,7 +118,9 @@ function MainTabs({ navigation, route, reloadWeekly, reloadMonthly } :any) {
             iconName = (Platform.OS === 'ios') ? 'setting' : 'setting';
           }
 
-          return <TabBarIcon focused={focused} name={iconName} size={26} />
+          return (
+            <TabBarIcon focused={focused} name={iconName} size={26} />
+          )
         },
       })}
       {...tabConfig}

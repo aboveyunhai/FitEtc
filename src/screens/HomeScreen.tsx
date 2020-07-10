@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     flex: 2.5,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: .5,
+    borderWidth: 0.3,
     borderColor: "#ffffff"
   },
   widgetContainer: {
