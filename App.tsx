@@ -7,13 +7,12 @@ import AppNavigator from './src/navigation/AppNavigator';
 import appStore from './src/redux/store/AppStore';
 
 const App = () => {
-  let init = async () => {
-
-  };
-
+  const init = async () => {
+    
+  }
   useEffect(() => {
     init().finally(() => {
-      RNBootSplash.hide({ duration: 150 });
+      RNBootSplash.hide({ duration: 250 });
     });
   }, [])
 
