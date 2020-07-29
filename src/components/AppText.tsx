@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text, TextStyle } from 'react-native';
+import { AppFont } from '../constants/AppConstant';
 
 
 interface MyProps {
@@ -15,8 +16,15 @@ export default class DefaultText extends Component<MyProps, MyState> {
     super(props);
   }
   render() {
+    const { style, ...otherProps } = this.props;
     return(
-      <Text style={ styles.defaultStyle } {...this.props} >
+      <Text
+        style={[
+          styles.defaultStyle,
+          style
+        ]}
+        {...otherProps}
+      >
         {this.props.children}
       </Text>
     );
@@ -25,7 +33,7 @@ export default class DefaultText extends Component<MyProps, MyState> {
 
 const styles = StyleSheet.create({
   defaultStyle: {
-    fontFamily: 'sans-serif-light',
+    fontFamily: AppFont.Oxanium.regular,
   },
   font1: {
     fontFamily: 'nixie-one',
