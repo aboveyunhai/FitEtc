@@ -3,7 +3,7 @@ import { Animated, View, StyleSheet, PanResponder, Text } from "react-native";
 import Svg, { Circle, ForeignObject, G, Line } from 'react-native-svg';
 import moment from 'moment';
 
-import { AppColor } from '../constants/AppConstant';
+import { AppColor, AppFont } from '../constants/AppConstant';
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -53,7 +53,8 @@ const styles = StyleSheet.create({
   },
   TextStyle: {
     color: AppColor.white,
-    fontSize: 11
+    fontSize: 11,
+    fontFamily: AppFont.Oxanium.light
   }
 })
 
@@ -220,17 +221,6 @@ export class GraphDecorator extends React.Component<any> {
             {
               <AnimatedLine
                 x1={0}
-                y1={-RADIUS*2.5}
-                x2={0}
-                y2={this.innerHeight}
-                stroke={AppColor.highlightBlue}
-                opacity={0}
-                strokeWidth={width*2}
-              />
-            }
-            {
-              <AnimatedLine
-                x1={0}
                 y1={0}
                 x2={0}
                 y2={this.innerHeight}
@@ -243,10 +233,10 @@ export class GraphDecorator extends React.Component<any> {
             {
               <AnimatedLine
                 x1={0}
-                y1={0}
+                y1={-RADIUS*2.5}
                 x2={0}
-                y2={this.innerHeight}
-                stroke={AppColor.highlightOrange}
+                y2={height-chartStyle.paddingBottom-verticalLabelHeight}
+                stroke={AppColor.highlightBlue}
                 opacity={0}
                 strokeWidth={width*2}
               />

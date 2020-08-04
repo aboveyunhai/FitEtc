@@ -2,7 +2,7 @@ import { Dimensions } from 'react-native';
 
 // Color
 const tintColor = '#58afef';
-const baseColor = "#21252b"
+const baseColor = "#21252b";
 const baseDarkColor = "#1d2026";
 const componentColor = "#282c34";
 const opa80 = 'CC', opa60 = '99', opa40 = '66', opa20 = '33';
@@ -15,6 +15,13 @@ const highlightPurple = '#c678dd';
 const white = '#ffffff';
 const shadow = '#273240';
 const black = '#000000';
+
+/*** some other theme color combination
+Pure Dark
+const baseColor = '#0d0d0d';
+const baseDarkColor = "#181818";
+
+*/
 
 const AppColor = {
   tintColor, baseColor, baseDarkColor, componentColor,

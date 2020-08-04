@@ -2,7 +2,7 @@ import React from 'react';
 import { Dimensions, StyleSheet, View} from 'react-native';
 import Svg, { Rect, Text } from 'react-native-svg';
 
-import { AppColor } from '../constants/AppConstant';
+import { AppColor, AppFont } from '../constants/AppConstant';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -24,12 +24,13 @@ export const HeaderTag = (props: any) => {
         />
         <Text
           x={x_Offset + tagSize}
-          y={y_Offset + header_H/2}
+          y={y_Offset + header_H/2-1}
           alignmentBaseline="central"
           fill={AppColor.highlightBlue}
           fontSize={14}
+          fontFamily={AppFont.Oxanium.regular}
         >
-          { "Avg: " + props.headerContent }
+          { props.tagContent }
         </Text>
         <Rect
           x={0}
@@ -38,7 +39,15 @@ export const HeaderTag = (props: any) => {
           width={tagSize}
           fill={AppColor.highlightBlue}
         />
-        <Text x={25/2} y={25/2} alignmentBaseline="central" textAnchor='middle' fill={AppColor.white} fontSize={15}>
+        <Text
+          x={25/2}
+          y={25/2-1}
+          alignmentBaseline="central"
+          textAnchor='middle'
+          fill={AppColor.white}
+          fontSize={15}
+          fontFamily={AppFont.Oxanium.bold}
+        >
           { props.tagLabel }
         </Text>
       </Svg>
