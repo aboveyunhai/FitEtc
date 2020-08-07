@@ -4,13 +4,16 @@ import Button from 'react-native-button';
 import Icon from 'react-native-vector-icons/AntDesign';
 import { connect } from 'react-redux';
 
-import { AppColor } from '../constants/AppConstant';
-import { setGoal, reloadWeekly, reloadMonthly } from '../redux/actions/ActionCreator';
-import * as NavigationService from '../navigation/NavigationService'
+import AppText from '../components/AppText';
+import { AppColor, AppFont, AppScreen } from '../constants/AppConstant';
+import * as actionTypes from '../redux/actions/actionTypes';
+import { setGoal, loadDaily, loadWeekly, loadMonthly, loadData } from '../redux/actions/ActionCreator';
+import * as NavigationService from '../navigation/NavigationService';
 import AsyncStorage from '@react-native-community/async-storage';
 
 interface UpdateButtonState {
   newGoal: string,
+  active: boolean
 };
 
 interface ButtonProps {
@@ -22,8 +25,25 @@ interface ReloadButtonState {
 }
 
 interface ReloadProps {
-  reloadMonthly: () => void;
-  reloadWeekly: () => void;
+  reload: () => void;
+  loadData: () => void;
+}
+
+export function reloadRecent(func: {[key:string]: (arg?:any)=>void} ){
+  const { reload, loadData } = func;
+  const nestedRoute = NavigationService.getCurrentRoute();
+  if(nestedRoute === undefined) return;
+  const routeName = nestedRoute.name;
+  switch (routeName) {
+    case AppScreen.RECENT:
+      reload();
+      break;
+    case AppScreen.OVERALL:
+      loadData(new Date(), new Date());
+     break;
+    default:
+      //nothing
+  }
 }
 
 export class UpdateButton extends React.Component<ButtonProps, UpdateButtonState> {
@@ -31,6 +51,7 @@ export class UpdateButton extends React.Component<ButtonProps, UpdateButtonState
     super(props);
     this.state = {
       newGoal: '1000',
+      active: false,
     }
   }
 
@@ -45,6 +66,15 @@ export class UpdateButton extends React.Component<ButtonProps, UpdateButtonState
 
   updateGoal() {
     this.props.setGoal(this.state.newGoal);
+  }
+
+  onPressIn() {
+    this.setState({active: true})
+  }
+
+  onPressOut() {
+    this.updateGoal();
+    this.setState({active:false})
   }
 
   componentDidMount() {
@@ -66,16 +96,28 @@ export class UpdateButton extends React.Component<ButtonProps, UpdateButtonState
   render(){
     return(
       <View style={styles.container}>
-          <Text style={styles.description}>DAILY OBJECTIVE</Text>
+          <AppText style={styles.description}>
+            <Text>DAILY GOAL</Text>
+          </AppText>
           <TextInput
-            style={{ textAlign: 'center', color: AppColor.highlightOrange, fontSize: 20}}
+            style={{ textAlign: 'center', color: AppColor.highlightOrange, fontSize: 20, fontFamily: 'Oxanium-ExtraLight'}}
             keyboardType={"numeric"}
             contextMenuHidden={true}
             maxLength={7}
             onChangeText = { (text) => this.onChangeText(text) }
             value={ this.state.newGoal }
           />
-        <Button style={styles.button} onPress={()=>this.updateGoal()}>
+        <Button
+          style={[
+            styles.button,
+            {
+              backgroundColor: (this.state.active) ? AppColor.highlightGreen : AppColor.baseColor,
+              color: (this.state.active) ? AppColor.baseColor : AppColor.highlightGreen
+            }
+          ]}
+          onPressIn={()=>this.onPressIn()}
+          onPressOut={()=>this.onPressOut()}
+        >
           UPDATE
         </Button>
       </View>
@@ -122,18 +164,10 @@ export class RefreshButton extends React.Component<ReloadProps, ReloadButtonStat
       })
     });
 
-    const route = NavigationService.getCurrentRoute();
-    const routeName = route.name;
-    switch (routeName) {
-      case 'Recent':
-        this.props.reloadWeekly();
-        this.props.reloadMonthly();
-        break;
-      case 'Overall':
-       break;
-      default:
-        //nothing
-    }
+    reloadRecent({
+      reload: this.props.reload,
+      loadData: this.props.loadData,
+    });
   }
 
   render() {
@@ -169,18 +203,17 @@ const styles = StyleSheet.create({
   description: {
     textAlign: 'center',
     color: AppColor.highlightBlue,
-    // fontFamily: 'Oxanium',
-    // fontWeight: 'bold',
   },
   button: {
     padding: 5,
     overflow: 'hidden',
     textAlign:'center',
-    fontFamily: 'Oxanium',
+    fontFamily: AppFont.Oxanium.regular,
     fontSize: 15,
-    color: AppColor.highlightGreen,
     borderColor: AppColor.highlightGreen,
     borderWidth: 1,
+    marginLeft: '5%',
+    marginRight: '5%',
   }
 });
 
@@ -195,8 +228,18 @@ const mapDispatchToProps = (dispatch: any) => {
 
 const mapReloadToProps = (dispatch: any) => {
   return {
-    reloadWeekly: () => dispatch(reloadWeekly()),
-    reloadMonthly: () => dispatch(reloadMonthly())
+    reload: () => {
+      dispatch({  type: actionTypes.LOAD_FIT_DAY_START });
+      dispatch(loadDaily());
+      dispatch({  type: actionTypes.LOAD_FIT_WEEK_START });
+      dispatch(loadWeekly());
+      dispatch({  type: actionTypes.LOAD_FIT_MONTH_START });
+      dispatch(loadMonthly());
+    },
+    loadData: (startDate:Date, endDate:Date) => {
+      dispatch({ type: actionTypes.LOAD_FIT_DATA_START });
+      dispatch(loadData(startDate, endDate));
+    }
   }
 }
 

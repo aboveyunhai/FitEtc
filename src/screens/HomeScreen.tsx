@@ -6,10 +6,13 @@ import RunCircle from '../components/RunCircle';
 import { DailyButton } from '../components/UpdateButton';
 import { AppColor } from '../constants/AppConstant';
 import AppView from '../components/AppView';
+import AppText from '../components/AppText';
+import { AppFont } from '../constants/AppConstant';
 
 declare var global: {HermesInternal: null | {}};
 /***
 * HomeScreen component
+* 2.5 : 1 = main container : widget container
 */
 export default function HomeScreen() {
   return (
@@ -17,15 +20,19 @@ export default function HomeScreen() {
       {
           __DEV__ && global.HermesInternal == null ? null : (
             <View style={styles.engine}>
-              <Text style={{ color: "#ffffff"}}>Engine: Hermes</Text>
+              <AppText>
+                <Text style={{ color: AppColor.white }}>Engine: Hermes</Text>
+              </AppText>
             </View>
           )
       }
         <View style={{flex: 1, flexDirection: "row", justifyContent:"space-between"}}>
           <DailyButton />
-          <AppView style={styles.widgetContainer} >
-            {({width, height}) => <ClockCircle size={ width < height? width : height }/>}
-          </AppView>
+          {
+            <AppView style={styles.widgetContainer} >
+              {({width, height}) => <ClockCircle size={ width < height? width : height }/>}
+            </AppView>
+          }
         </View>
       {
         <AppView style={styles.mainContainer}>
@@ -47,7 +54,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 0.3,
-    borderColor: "#ffffff"
+    borderColor: AppColor.white+AppColor.opa60
   },
   widgetContainer: {
     flex: 1,

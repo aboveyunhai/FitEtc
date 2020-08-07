@@ -12,6 +12,7 @@ export function navigate(name:string, params: any) {
 }
 
 export function getCurrentRoute() {
+  if(navigationRef.current === null) return;
   let rootState = navigationRef.current.getRootState();
   let route = rootState.routes[rootState.index];
   let currentRoute;
@@ -19,5 +20,6 @@ export function getCurrentRoute() {
   while (route.state) {
     route = route.state.routes[route.state.index];
   }
+  
   return route;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, StyleSheet, StyleProp, Text, View } from 'react-native';
+import { StyleSheet, StyleProp, Text, View } from 'react-native';
 import { connect } from 'react-redux';
 import { Defs, RadialGradient, Stop } from 'react-native-svg';
 
@@ -7,24 +7,24 @@ import moment from 'moment';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import GoogleFit, { Scopes } from 'react-native-google-fit';
 import AsyncStorage from '@react-native-community/async-storage';
-
-import { setGoal } from '../redux/actions/ActionCreator';
-import DefaultText from '../components/AppText';
-import { AppColor } from '../constants/AppConstant';
 import { Circle } from 'react-native-svg';
 
-const STEP_SOURCE = "com.google.android.gms:estimated_steps";
+import { setGoal, loadDaily } from '../redux/actions/ActionCreator';
+import DefaultText from '../components/AppText';
+import { AppColor, AppFont } from '../constants/AppConstant';
+import { DailyProps } from '../screens/StatisticsScreen/RecentScreen';
+import { isArrayEqual, sum } from '../constants/HelperFunction';
 
 interface RunProp {
   style?: StyleProp<{}>;
   size: number;
   dailyGoal: number;
   setGoal: (value:string) => void;
+  daily: DailyProps;
+  loadDaily: () => Promise<void>;
 }
 
 interface RunState {
-  points: number;
-  pastStepCount: any;
   currentStepCount: number;
 }
 
@@ -38,94 +38,11 @@ const runOptions = {
 
 class RunCircle extends React.Component<RunProp,RunState> {
   timerID: number = 0;
-  constructor(props: Readonly<any>){
+  constructor(props: RunProp){
     super(props);
     this.state = {
-      points: 0,
-      pastStepCount: 0,
       currentStepCount: 0,
     }
-  }
-
-  requestApiStep = () => {
-      const today = moment();
-      // const today = date.toISOString().split('T')[0];// YYYY-MM-DD format
-
-      const dailyOptions = {
-        startDate: moment(today).startOf('day'),
-        endDate: moment(today).endOf('day'),
-        // configs:{
-        //   bucketTime: 15,
-        //   bucketUnit: 'MINUTE'
-        // }
-      }
-
-      GoogleFit.getDailyStepCountSamples(dailyOptions)
-       .then((res:any) => {
-         // result => [{"source": "com.google.android.gms:estimated_steps", "steps": [[Object]]}]
-         // steps => [{"date": "currentDate", "value": number}]
-         const result = res.filter( (data:any) => data.source === STEP_SOURCE);
-         let res_step = 0;
-
-         // const rawSteps = result[0].rawSteps;
-         //
-         // if (rawSteps.length > 0) {
-         //   rawSteps.forEach( (item: any) => {
-         //     console.log(parseInt(moment(item.endDate).format("HH")), 'Step: ' + item.steps);
-         //   });
-         // }
-
-         if (result[0].steps.length > 0) {
-           res_step = (result[0].steps)[0].value;
-         }
-         this.setState({
-           currentStepCount: res_step,
-         })
-         // console.log("Details >>", res.map( (data:any) => data.steps ));
-
-       })
-       .catch((err: any) => {console.warn(err)})
-  }
-
-  _subscribe = () => {
-    // authentication
-    GoogleFit.authorize(runOptions)
-    .then(authResult => {
-      if(authResult.success) {
-
-        GoogleFit.startRecording( callback => {
-          console.log(callback);
-           // Process data from Google Fit Recording API (no google fit app needed)
-         }, ['step']);
-
-         this.requestApiStep();
-         this.timerID = setInterval(() => {
-           this.requestApiStep();
-         }, 10 * 1000);
-
-      }else{
-        Alert.alert("AUTH_DENIED", authResult.message);
-      }
-
-
-    })
-    .catch(() => {
-
-      Alert.alert(
-        "AUTH_ERROR",
-        "Click Reload button to re-authorize.",
-        [
-          {
-            text: "Cancel",
-            onPress: () => {},
-            style: "cancel"
-          },
-          { text: "OK", onPress: () => this._subscribe() }
-        ],
-        { cancelable: false }
-      );
-
-    })
   }
 
   _unsubscribe = () => {
@@ -145,63 +62,116 @@ class RunCircle extends React.Component<RunProp,RunState> {
 
   componentDidMount() {
     this.restoreState();
-    this._subscribe();
+    // init
+    this.props.loadDaily();
+
+    this.timerID = setInterval(() => {
+      this.props.loadDaily();
+    }, 30 * 1000);
+  }
+
+  shouldComponentUpdate(nextProps: RunProp, nextState: RunState) {
+    if(nextProps.size !== this.props.size) {
+      console.log("RunCircleDynamicSize_update");
+      return true;
+    }
+
+    if(nextProps.dailyGoal !== this.props.dailyGoal) return true;
+    if(!isArrayEqual(this.props.daily.data, nextProps.daily.data)) return true;
+
+    return false;
   }
 
   componentWillUnmount() {
     this._unsubscribe();
+    GoogleFit.unsubscribeListeners();
   }
 
   render() {
-    const fill: number = (this.state.currentStepCount /this.props.dailyGoal) * 100; // number: 0-100
+    const fill: number = (sum(this.props.daily.data) /this.props.dailyGoal) * 100; // number: 0-100
 
     const padding = this.props.size*.1, lineWidth = 3;
     const sizeCheck = this.props.size - padding - lineWidth; // prevent negative value in Svg
     const circularSize = sizeCheck > 0 ? sizeCheck : 0;
 
+    let mostActiveHour = 0;
+    let mostActiveHourStep = 0;
+
+    this.props.daily.data.forEach( (item: any, index) => {
+      if(mostActiveHourStep < item) {
+        // console.log(parseInt(moment(item.endDate).format("HH")), 'Step: ' + item.steps);
+        mostActiveHourStep = item;
+        mostActiveHour = parseInt(moment.utc(index*3600*1000).format("HH"));
+      }
+    });
+
+
     return (
-      <View style={[styles.container, this.props.style]}>
-        <AnimatedCircularProgress
-          size={circularSize}
-          width={4}
-          padding={padding}
-          backgroundWidth={3}
-          dashedBackground={{ width: 3, gap: 8 }}
-          backgroundColor={AppColor.highlightBlueL}
-          renderCap={
-            ({ center }) =>
-            <>
-              <Defs>
-                <RadialGradient id='grad' gradientUnits="userSpaceOnUse">
-                  <Stop offset={(fill/100) > 1 ? 1 : (fill/100)} stopColor={AppColor.highlightGreen} />
-                  <Stop offset="1" stopColor={AppColor.highlightBlueD} />
-                </RadialGradient>
-              </Defs>
-              <Circle cx={center.x} cy={center.y} r="8" fill="url(#grad)" />
-            </>
-          }
-          fill={fill}
-          tintColor={AppColor.highlightBlueD}
-          tintColorSecondary={AppColor.highlightGreen}
-          lineCap="round"
-          duration={1000}
-        >
-          {fill =>
-            <>
-              <DefaultText>
-                <Text style={[styles.points,{fontSize: circularSize / 6, fontFamily: 'Oxanium-Light'},]}>
-                  {Math.round(this.props.dailyGoal * (fill / 100))}
-                </Text>
-              </DefaultText>
-              <DefaultText>
-                <Text style={[styles.points,{fontSize: circularSize / 18, fontFamily: 'Oxanium-ExtraLight'}]}>
-                {this.props.dailyGoal}
-                </Text>
-              </DefaultText>
-            </>
-          }
-        </AnimatedCircularProgress>
-      </View>
+      <>
+        <View style={styles.trivia}>
+          <DefaultText>
+            <Text style={{
+              color: AppColor.highlightGreen,
+              fontSize: circularSize / 20,
+              fontFamily: AppFont.Oxanium.extraLight
+            }}>
+              Highlight: {'\n'}
+              <Text style={{fontSize: circularSize / 22}}>
+                Most Active Hour:
+                {
+                  (mostActiveHourStep > 0)
+                  ? <Text style={{fontSize: circularSize / 23}}> { mostActiveHour }:00 - { mostActiveHour + 1 }:00</Text>
+                  : <Text style={{fontSize: circularSize / 23}}> no move yet</Text>
+                }
+                {'\n'}
+                Active Hour Steps: {mostActiveHourStep}
+              </Text>
+            </Text>
+          </DefaultText>
+        </View>
+        <View style={[styles.container, this.props.style]}>
+          <AnimatedCircularProgress
+            size={circularSize}
+            width={4}
+            padding={padding}
+            backgroundWidth={3}
+            dashedBackground={{ width: 3, gap: 8 }}
+            backgroundColor={AppColor.highlightBlueL}
+            renderCap={
+              ({ center }) =>
+              <>
+                <Defs>
+                  <RadialGradient id='grad' gradientUnits="userSpaceOnUse">
+                    <Stop offset={(fill/100) > 1 ? 1 : (fill/100)} stopColor={AppColor.highlightGreen} />
+                    <Stop offset="1" stopColor={AppColor.highlightBlueD} />
+                  </RadialGradient>
+                </Defs>
+                <Circle cx={center.x} cy={center.y} r="8" fill="url(#grad)" />
+              </>
+            }
+            fill={fill}
+            tintColor={AppColor.highlightBlueD}
+            tintColorSecondary={AppColor.highlightGreen}
+            lineCap="round"
+            duration={1000}
+          >
+            {fill =>
+              <>
+                <DefaultText>
+                  <Text style={[styles.points, {fontSize: circularSize / 6}]}>
+                    {Math.round(this.props.dailyGoal * (fill / 100))}
+                  </Text>
+                </DefaultText>
+                <DefaultText>
+                  <Text style={[styles.points, {fontSize: circularSize / 18, fontFamily: AppFont.Oxanium.light}]}>
+                  {this.props.dailyGoal}
+                  </Text>
+                </DefaultText>
+              </>
+            }
+          </AnimatedCircularProgress>
+        </View>
+      </>
     )
   }
 }
@@ -212,13 +182,15 @@ class RunCircle extends React.Component<RunProp,RunState> {
 
 const mapStateToProps = (state: any) => {
   return {
-    dailyGoal: parseInt(state.runReducer.dailyGoal)
+    dailyGoal: parseInt(state.runReducer.dailyGoal),
+    daily: state.stepDailyReducer.daily,
   }
 };
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    setGoal: (newGoal:string) => dispatch(setGoal(newGoal))
+    setGoal: (newGoal:string) => dispatch(setGoal(newGoal)),
+    loadDaily: () => dispatch(loadDaily()),
   }
 };
 
@@ -237,4 +209,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  trivia: {
+    flex: 1,
+    position: 'absolute',
+    zIndex:1,
+    padding: 5,
+    width:'100%',
+    height: '100%'
+  }
 });

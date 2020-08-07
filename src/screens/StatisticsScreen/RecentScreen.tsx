@@ -1,29 +1,39 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, StyleSheet, Text, View} from 'react-native';
+import { ActivityIndicator, Animated, StyleSheet, Text, View, Easing} from 'react-native';
 
 import { connect } from 'react-redux';
 import { BarChart, ContributionGraph } from 'react-native-chart-kit';
-import moment from 'moment';
 import GoogleFit from 'react-native-google-fit';
 
-import { AppColor } from '../../constants/AppConstant';
+import { AppColor, AppFont, AppCompSize } from '../../constants/AppConstant';
+import AppText from '../../components/AppText';
 import { HeaderTag } from '../../components/HeaderTag';
-import { reloadWeekly, reloadMonthly } from '../../redux/actions/ActionCreator';
+import * as actionTypes from '../../redux/actions/actionTypes';
+import { loadDaily, loadWeekly, loadMonthly } from '../../redux/actions/ActionCreator';
 import { GraphDecorator } from '../../components/GraphDecorator';
+import { isArrayEqual, isArrayOfObjectDiff, sum } from '../../constants/HelperFunction';
 
 const WEEK_OFFSET = 105; // 15 weeks includes currentWeek
-const MILLISECONDS_IN_ONE_DAY = 24 * 60 * 60 * 1000;
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const GRAPH_HEIGHT = 200;
-const STEP_SOURCE = "com.google.android.gms:estimated_steps";
+const SCREEN_WIDTH = AppCompSize.SCREEN_W;
+const GRAPH_HEIGHT = AppCompSize.GRAPH_HEIGHT;
 
 export interface StatProps {
+  daily: DailyProps,
   weekly: WeeklyProps,
   monthly: MonthlyProps,
   isLoading: boolean[],
   error: any[],
-  reloadWeekly: ()=> void,
-  reloadMonthly: ()=> void,
+  load: ()=> void,
+}
+
+interface StatState {
+  fadeAnim: Animated.Value
+}
+
+export interface DailyProps {
+  labels: Array<string>,
+  data: Array<number>,
+  avgPerHour: number,
 }
 
 interface WeeklyProps {
@@ -37,11 +47,18 @@ interface MonthlyProps {
   endDate: string
 }
 
-const barChartConfig = {
+const chartBackground = {
   backgroundGradientFrom: AppColor.highlightBlueL,
   backgroundGradientFromOpacity: 0.05,
   backgroundGradientTo: AppColor.highlightBlueL,
   backgroundGradientToOpacity: 0.05,
+}
+
+const barChartConfig = {
+  ...chartBackground,
+  propsForLabels:{
+    fontFamily: AppFont.Oxanium.light
+  },
   color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
   fillShadowGradientOpacity: 0.8,
   barPercentage: 0.5,
@@ -55,15 +72,15 @@ const barChartConfig = {
     paddingRight: 20,
   },
   gutterTop: 20,
-  horizontalLabelWidth: SCREEN_WIDTH*0.9*0.15,
+  horizontalLabelWidth: 60,
   barRadius: 3,
 };
 
 const contributionChartConfig = {
-  backgroundGradientFrom: AppColor.highlightBlue,
-  backgroundGradientFromOpacity: 0.1,
-  backgroundGradientTo: AppColor.highlightBlue,
-  backgroundGradientToOpacity: 0.1,
+  ...chartBackground,
+  propsForLabels:{
+    fontFamily: AppFont.Oxanium.bold
+  },
   color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
   toggleColor: `rgba(26, 255, 146, 1)`,
   chartStyle: {
@@ -74,72 +91,17 @@ const contributionChartConfig = {
     justifyContent: 'start',
     alignItems: 'center',
     borderRadius: 5,
-  }
+  },
 }
 
-export const isArrayEqual = (arr1: number[], arr2: number[]) => {
-  if (arr1.length !== arr2.length) return false;
-  for(let i = 0; i < arr1.length; i++) {
-    if (arr1[i] !== arr2[i]) return false;
-  }
-  return true;
-}
-
-class DailyChart extends React.Component {
-
-  state = {
-    labels: Array.from({length: 24}, (v, k) => k.toString()),
-    data: Array(24).fill(0),
-    avgPerMin: 0,
+class DailyChart extends React.Component<DailyProps> {
+  shouldComponentUpdate = (nextProps: DailyProps, nextState: any) => {
+    if(isArrayEqual(this.props.data, nextProps.data)) return false
+    return true;
   }
 
-  componentDidMount = () => {
-    this.loadingData();
-  }
-
-  componentDidUpdate = (prevProps: any, prevState: any) => {
-    this.loadingData();
-  }
-
-  loadingData = () => {
-    const today = moment();
-    const options = {
-      startDate: moment(today).startOf('day'),
-      endDate: moment(today).endOf('day'),
-      configs:{
-        bucketTime: 15,
-        bucketUnit: 'MINUTE'
-      }
-    }
-
-    GoogleFit.getDailyStepCountSamples(options).then((res) => {
-      const result = res.filter( (data:any) => data.source === STEP_SOURCE);
-
-      const rawSteps = result[0].rawSteps;
-      let totalMin = 0;
-
-      if (rawSteps.length > 0) {
-        const data = Array(24).fill(0);
-        rawSteps.forEach( (item: any) => {
-          const index = parseInt(moment(item.endDate).format("H"));
-          data[index] += item.steps;
-          if(item.steps > 0) {
-            // console.log(moment(item.endDate).format('HH:mm:ss') + '-' + moment(item.startDate).format('HH:mm:ss'))
-            totalMin += moment(item.endDate).diff(moment(item.startDate), "minutes")
-          }
-        });
-
-        // this line is to determine state update, remove will cause infinite loop
-        if(isArrayEqual(data, this.state.data)) return;
-
-        if (totalMin < 0) totalMin = 1;
-
-        this.setState({
-          data: data,
-          avgPerMin: Math.ceil(data.reduce((total, value) => (total + value), 0) / totalMin)
-        });
-      }
-    }).catch((error) => { console.log(error) });
+  componentDidUpdate = () => {
+    // console.log("Daily_update");
   }
 
   render() {
@@ -147,7 +109,7 @@ class DailyChart extends React.Component {
       <>
         <HeaderTag
           tagLabel={'D'}
-          headerContent={this.state.avgPerMin + '/min'}
+          tagContent={'Avg: ' + this.props.avgPerHour + '/h'}
         />
         <BarChart
           style={styles.chartContainerStyle}
@@ -162,10 +124,10 @@ class DailyChart extends React.Component {
               }
           }}
           data={{
-            labels: this.state.labels,
+            labels: this.props.labels,
             datasets: [
               {
-               data: this.state.data
+               data: this.props.data
              },
             ],
           }}
@@ -191,12 +153,22 @@ class DailyChart extends React.Component {
 }
 
 class WeeklyChart extends React.Component<WeeklyProps> {
+
+  shouldComponentUpdate = (nextProps: WeeklyProps, nextState: any) => {
+    if(isArrayEqual(this.props.data, nextProps.data)) return false
+    return true;
+  }
+
+  componentDidUpdate = () => {
+    // console.log("Weekly_update");
+  }
+
   render() {
     return (
       <>
         <HeaderTag
           tagLabel={'W'}
-          headerContent={ Math.ceil(this.props.data.reduce((x, y) => x + y, 0) / this.props.data.length) + '/day'}
+          tagContent={ 'Avg: ' + Math.ceil( sum(this.props.data) / this.props.data.length ) + '/day'}
         />
         <BarChart
           style={styles.chartContainerStyle}
@@ -244,8 +216,10 @@ class MonthlyChart extends React.Component<MonthlyProps> {
           ],
         }
       ]}>
-        <Text style={{color: AppColor.white, fontSize: 14}}>Date: {dateInfo.date} </Text>
-        <Text style={{color: AppColor.white, fontSize: 14}}>Count: {dateInfo.value}</Text>
+        <AppText style={styles.tooltipContentStyle}>
+          <Text>Date: {dateInfo.date} </Text>
+          <Text>Count: {dateInfo.value}</Text>
+        </AppText>
       </View>
     )
   }
@@ -256,13 +230,24 @@ class MonthlyChart extends React.Component<MonthlyProps> {
      return data.reduce((total: number, item: {date: string, value: string}) => total + parseInt(item.value), 0) / dataSize;
    }
 
+  shouldComponentUpdate = (nextProps: MonthlyProps, nextState: any) => {
+    if(nextProps.endDate !== this.props.endDate) return true;
+    if(isArrayOfObjectDiff(nextProps.data, this.props.data)) return true;
+    return false;
+  }
+
+  componentDidUpdate = () => {
+    // console.log("Monthly_update");
+  }
+
   render() {
     return (
       <>
         <HeaderTag
           tagLabel={'M'}
-          headerContent={Math.ceil(this.getAverage(this.props.data)) + '/day' }
+          tagContent={ 'Avg: ' + Math.ceil(this.getAverage(this.props.data)) + '/day' }
         />
+        {
         <ContributionGraph
           style={styles.chartContainerStyle}
           values={this.props.data}
@@ -277,33 +262,93 @@ class MonthlyChart extends React.Component<MonthlyProps> {
           squareSize={20}
           // horizontal={false}
         />
+      }
       </>
     )
   }
 }
 
-class Analysis extends React.Component<StatProps> {
+const LoadingBar = () => {
+  return (
+    <View style={styles.loadingBar}>
+      <View style={styles.loadingBarIndicator}>
+        <ActivityIndicator size={'large'}  color={AppColor.black}/>
+      </View>
+    </View>
+  );
+}
+
+class Analysis extends React.Component<StatProps,StatState> {
+
+  state = {
+    fadeAnim: new Animated.Value(0)
+  }
+
+  fadeAnim = (toValue: number) => {
+    Animated.timing(this.state.fadeAnim, {
+      toValue: toValue,
+      easing: Easing.ease,
+      duration: 1000,
+      useNativeDriver: true
+    }).start();
+  }
 
   componentDidMount = () => {
-    this.props.reloadWeekly();
-    this.props.reloadMonthly();
+    this.props.load();
+  }
+
+  componentWillUnmount = () => {
+    GoogleFit.unsubscribeListeners();
+  }
+
+  componentDidUpdate = () => {
+    // console.log("Analysis_update")
+    if(this.props.isLoading.indexOf(true) !== -1){
+      this.fadeAnim(1);
+    }else{
+      this.fadeAnim(0);
+    }
+  }
+
+  shouldComponentUpdate = (nextProps: StatProps, nextState: any) => {
+    if(!isArrayEqual(this.props.isLoading, nextProps.isLoading)) return true;
+
+    if(!isArrayEqual(this.props.daily.data, nextProps.daily.data)) return true;
+
+    if(this.props.weekly.defMax !== nextProps.weekly.defMax) return true;
+    if(!isArrayEqual(this.props.weekly.data, nextProps.weekly.data)) return true;
+
+    if(this.props.monthly.endDate !== this.props.monthly.endDate) return true;
+    if(isArrayOfObjectDiff(this.props.monthly.data, nextProps.monthly.data)) return true;
+    return false;
   }
 
   render() {
     return (
       <View style={{paddingTop:10}}>
         {
-          <DailyChart />
+          <Animated.View
+            style={{
+              opacity: this.state.fadeAnim
+            }}
+          >
+            <LoadingBar />
+          </Animated.View>
         }
         {
           this.props.isLoading[0]
           ? <View style={styles.indicatorContainer}><ActivityIndicator /></View>
-          : <WeeklyChart defMax={this.props.weekly.defMax} data={this.props.weekly.data} labels={this.props.weekly.labels}/>
+          : <DailyChart data={this.props.daily.data} avgPerHour={this.props.daily.avgPerHour} labels = {this.props.daily.labels}/>
         }
         {
           this.props.isLoading[1]
           ? <View style={styles.indicatorContainer}><ActivityIndicator /></View>
-          : <MonthlyChart data={this.props.monthly.data} endDate={this.props.monthly.endDate} />
+          : <WeeklyChart defMax={this.props.weekly.defMax} data={this.props.weekly.data} labels={this.props.weekly.labels}/>
+        }
+        {
+          this.props.isLoading[2]
+          ? <View style={styles.indicatorContainer}><ActivityIndicator /></View>
+          : <MonthlyChart {...this.props.monthly} />
         }
       </View>
     )
@@ -311,6 +356,23 @@ class Analysis extends React.Component<StatProps> {
 }
 
 const styles = StyleSheet.create({
+  loadingBar: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    width: '100%',
+    position: 'absolute',
+    zIndex: 1024
+  },
+  loadingBarIndicator:{
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: AppColor.white,
+    height:40,
+    width:40,
+    borderRadius: 20
+  },
+  //below indecator style is for graph loading
   indicatorContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -336,24 +398,35 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     borderColor: AppColor.highlightGreen,
     borderWidth: 1,
-    // justifyContent: 'center'
+    justifyContent: 'center'
+  },
+  tooltipContentStyle: {
+    fontSize: 14,
+    color: AppColor.white,
   },
 });
 
 //connect to redux
 const mapStateToProps = (state: any) => {
   return {
+    daily: state.stepDailyReducer.daily,
     weekly: state.stepWeeklyReducer.weekly,
     monthly: state.stepMonthlyReducer.monthly,
-    isLoading: [state.stepWeeklyReducer.isLoading, state.stepMonthlyReducer.isLoading],
-    error: [state.stepWeeklyReducer.error, state.stepMonthlyReducer.error]
+    isLoading: [state.stepDailyReducer.isLoading, state.stepWeeklyReducer.isLoading, state.stepMonthlyReducer.isLoading],
+    error: [state.stepDailyReducer.error, state.stepWeeklyReducer.error, state.stepMonthlyReducer.error]
   }
 }
 
 const mapDispatchToProps = (dispatch: any) => {
   return {
-    reloadWeekly: () => dispatch(reloadWeekly()),
-    reloadMonthly: () => dispatch(reloadMonthly())
+    load: () => {
+      dispatch({  type: actionTypes.LOAD_FIT_DAY_START });
+      dispatch(loadDaily());
+      dispatch({  type: actionTypes.LOAD_FIT_WEEK_START });
+      dispatch(loadWeekly());
+      dispatch({  type: actionTypes.LOAD_FIT_MONTH_START });
+      dispatch(loadMonthly());
+    },
   }
 };
 

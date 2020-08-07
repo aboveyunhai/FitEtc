@@ -1,28 +1,38 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, View} from 'react-native';
+import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
-import { AppColor } from '../constants/AppConstant';
+import { AppColor, AppFont, AppCompSize } from '../constants/AppConstant';
 import { RecentScreen } from '../screens/StatisticsScreen/RecentScreen';
+import { OverallScreen } from '../screens/StatisticsScreen/OverallScreen';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
+const TABBAR_HEIGHT = AppCompSize.TABBAR_HEIGHT - 10;
 
 // navigation
 const Tab = createMaterialTopTabNavigator();
+
+const LoadingScreen = () => {
+  return (
+    <View style={[styles.container, { justifyContent: 'center', alignItems: 'center'}]}>
+      <ActivityIndicator size="small" color={AppColor.white} />
+    </View>
+  )
+}
 
 const TabProps = {
   lazy: true,
   lazyPlaceholder: LoadingScreen,
   initialLayout: {
-    width: SCREEN_WIDTH,
+    width: AppCompSize.SCREEN_W,
   },
   tabBarOptions: {
     labelStyle: {
       fontSize: 12,
+      fontFamily: AppFont.Oxanium.regular,
     },
     style: { backgroundColor: AppColor.baseColor },
-    tabStyle: { height: 40, paddingTop: 0 },
+    tabStyle: { height: TABBAR_HEIGHT, paddingTop: 0},
     indicatorStyle: {
       backgroundColor: AppColor.highlightBlue,
     },
@@ -40,23 +50,15 @@ function RecentHistory() {
 
 function OverallHistory() {
   return (
-    <View style={[styles.container, { justifyContent: 'center', alignItems: 'center'}]}>
-
-    </View>
-  )
-}
-
-function LoadingScreen() {
-  return (
-    <View style={[styles.container, { justifyContent: 'center', alignItems: 'center'}]}>
-      <ActivityIndicator size="small" color={AppColor.white} />
+    <View style={styles.container}>
+      <OverallScreen />
     </View>
   )
 }
 
 export default function StatisticsScreen() {
   return (
-    <Tab.Navigator {...TabProps}>
+    <Tab.Navigator {...TabProps} swipeEnabled={true}>
       <Tab.Screen name="Recent" component={RecentHistory} />
       <Tab.Screen name="Overall" component={OverallHistory} />
     </Tab.Navigator>

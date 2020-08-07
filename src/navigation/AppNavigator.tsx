@@ -19,7 +19,7 @@ export default function AppNavigation() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor={AppColor.componentColor} barStyle="light-content" />
+      <StatusBar backgroundColor={AppColor.baseDarkColor} barStyle="light-content" />
         <NavigationContainer ref={navigationRef} >
           <MainTabNavigator/>
         </NavigationContainer>

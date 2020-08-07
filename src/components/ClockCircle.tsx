@@ -4,7 +4,7 @@ import { Circle, Defs, RadialGradient, Stop, Svg } from 'react-native-svg';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
 import DefaultText from '../components/AppText';
-import { AppColor } from '../constants/AppConstant';
+import { AppColor, AppFont } from '../constants/AppConstant';
 
 const MAX_SEC = 60;
 const GOLDEN_RATIO = (1+Math.sqrt(5))/2; //1.6...
@@ -110,23 +110,24 @@ export default class ClockCircle extends React.Component<ClockProp, ClockState>
           width={3}
           tintColor={AppColor.componentColor}
           backgroundWidth={3}
+          // backgroundColor={AppColor.highlightGreen + AppColor.opa80}
           backgroundColor={AppColor.highlightGreen + AppColor.opa80}
           dashedBackground={{width: 3, gap:10}}
-          fill={fill}
+          fill={0}
           padding={padding}
           lineCap={"round"}
           // tintTransparency={false}
           // skipAnimOnComplete={true}
-          renderCap={ ({ center }) =>
-            <Svg>
-              <Defs>
-                <RadialGradient id="grad">
-                  <Stop offset="0" stopColor={AppColor.highlightOrange} stopOpacity="1" />
-                  <Stop offset="1" stopColor={AppColor.highlightOrange} stopOpacity="1" />
-                </RadialGradient>
-              </Defs>
-              <Circle cx={center.x} cy={center.y} r="6" fill="url(#grad)" />
-            </Svg> }
+          // renderCap={ ({ center }) =>
+          //   <Svg>
+          //     <Defs>
+          //       <RadialGradient id="grad">
+          //         <Stop offset="0" stopColor={AppColor.highlightOrange} stopOpacity="1" />
+          //         <Stop offset="1" stopColor={AppColor.highlightOrange} stopOpacity="1" />
+          //       </RadialGradient>
+          //     </Defs>
+          //     <Circle cx={center.x} cy={center.y} r="6" fill="url(#grad)" />
+          //   </Svg> }
           >
           { () => <ClockNumDisplay
               style={ styles.textContainer }
@@ -152,14 +153,14 @@ const styles = StyleSheet.create({
   },
   textHour: {
     color: AppColor.highlightBlue,
-    fontFamily: 'Oxanium-ExtraLight',
+    fontFamily: AppFont.Oxanium.extraLight,
   },
   textMin: {
     color: AppColor.highlightOrange,
-    fontFamily: 'Oxanium-Light',
+    fontFamily: AppFont.Oxanium.light,
   },
   textSec: {
     color: AppColor.highlightGreen,
-    fontFamily: 'Oxanium-Bold',
+    fontFamily: AppFont.Oxanium.bold,
   }
 });

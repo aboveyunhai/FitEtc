@@ -13,7 +13,17 @@ export const runCircleReducer = (state = { dailyGoal: '1000' }, action: any) => 
   }
 };
 
-const initWeeklyData = {
+const INIT_DAILY_DATA = {
+  daily:{
+    labels: Array.from({length: 24}, (v, k) => k.toString()),
+    data: Array(24).fill(0),
+    avgPerHour: 0,
+  },
+  isLoading: false,
+  error: null
+}
+
+const INIT_WEEKLY_DATA = {
   weekly: {
     labels: ['SUN','MON','TUE','WED', 'THU', 'FRI','SAT'],
     data: [0, 0, 0, 0, 0, 0, 0],
@@ -23,16 +33,65 @@ const initWeeklyData = {
   error: null
 }
 
-const initMonthlyData = {
+const INIT_MONTHLY_DATA = {
   monthly: {
     data: [],
+    activeDay: 0,
+    inactiveDay: 0,
     endDate: moment().endOf('week').add(1, "days").format('YYYY-MM-DD'),
   },
   isLoading: false,
   error: null
 }
 
-export const stepWeeklyReducer = (state = initWeeklyData, action: any) => {
+const INIT_DATA = {
+  overall: {
+    labels: [1,2,3],
+    data: [0,0,0],
+    activeTime: 0,
+    inactiveTime: 0,
+    totalTime: 0,
+    startDate: moment(),
+    endDate: moment(),
+    unit: '',
+    totalStep: 0,
+    speed: 0,
+    highData: { value: -Infinity, date: moment()  },
+    lowData: { value: Infinity, date: moment()  }
+  },
+  isLoading: false,
+  error: null,
+}
+
+export const stepDailyReducer = (state = INIT_DAILY_DATA, action: any) => {
+  switch (action.type) {
+    case types.LOAD_FIT_DAY_START:
+      return {
+        ...state,
+        isLoading: true
+      };
+    case types.LOAD_FIT_DAY_SUCCESS:
+      return {
+        ...state,
+        daily: {
+          ...state.daily,
+          data: action.payload.data,
+          avgPerHour: action.payload.avgPerHour,
+        },
+        isLoading: false
+      };
+    case types.LOAD_FIT_DAY_FAILURE:
+      return {
+        ...state,
+        error: action.payload,
+        isLoading: false,
+      }
+    default:
+      return state;
+  }
+}
+
+export const stepWeeklyReducer = (state = INIT_WEEKLY_DATA, action: any) => {
   switch (action.type) {
     case types.LOAD_FIT_WEEK_START:
       return {
@@ -60,7 +119,7 @@ export const stepWeeklyReducer = (state = initWeeklyData, action: any) => {
   }
 };
 
-export const stepMonthlyReducer = (state = initMonthlyData, action: any) => {
+export const stepMonthlyReducer = (state = INIT_MONTHLY_DATA, action: any) => {
   switch (action.type) {
     case types.LOAD_FIT_MONTH_START:
       return {
@@ -74,6 +133,8 @@ export const stepMonthlyReducer = (state = initMonthlyData, action: any) => {
           ...state.monthly,
           data: action.payload.data,
           endDate: action.payload.endDate,
+          activeDay: action.payload.activeDay,
+          inactiveDay: action.payload.inactiveDay,
         },
         isLoading: false
       };
@@ -85,5 +146,42 @@ export const stepMonthlyReducer = (state = initMonthlyData, action: any) => {
         }
       default:
         return state;
+  }
+}
+
+export const stepReducer = (state = INIT_DATA, action: any) => {
+  switch (action.type) {
+    case types.LOAD_FIT_DATA_START:
+      return {
+        ...state,
+        isLoading: true,
+      }
+    case types.LOAD_FIT_DATA_SUCCESS:
+      return {
+        ...state,
+        overall: {
+          ...state.overall,
+          data: action.payload.data,
+          startDate: action.payload.startDate,
+          endDate: action.payload.endDate,
+          activeTime: action.payload.activeTime,
+          inactiveTime: action.payload.inactiveTime,
+          totalTime: action.payload.totalTime,
+          unit: action.payload.unit,
+          totalStep: action.payload.totalStep,
+          speed: action.payload.speed,
+          highData: action.payload.highData,
+          lowData: action.payload.lowData
+        },
+        isLoading: false
+      }
+    case types.LOAD_FIT_DATA_FAILURE:
+      return {
+        ...state,
+        error: action.payload,
+        isLoading: false
+      }
+    default:
+      return state;
   }
 }
