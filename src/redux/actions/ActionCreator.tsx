@@ -85,8 +85,8 @@ export const loadDaily = () => {
         startDate: moment(today).startOf('day'),
         endDate: moment(today).endOf('day'),
         configs:{
-          bucketTime: 15,
-          bucketUnit: 'MINUTE'
+          bucketTime: 1,
+          bucketUnit: 'HOUR'
         }
       }
 
@@ -94,13 +94,13 @@ export const loadDaily = () => {
       ((response: any) => {
         const res_estimated = response.filter( (data:any) => data.source === STEP_ESTIMATED);
         const rawSteps = res_estimated[0].rawSteps;
-        const { data, totalMin } = initDailyData(rawSteps);
+        const { data, totalTime, activeHour } = initDailyData(rawSteps);
 
         dispatch({
           type: types.LOAD_FIT_DAY_SUCCESS,
           payload: {
             data: data,
-            avgPerMin: Math.ceil(sum(data) / totalMin)
+            avgPerHour: Math.ceil(sum(data) / (activeHour||1))
           }
         });
       }).catch
@@ -246,8 +246,8 @@ export const loadData = (start: Date, end: Date) => {
         startDate: startDate,
         endDate: endDate,
         configs:{
-          bucketTime: (bucketConfig)? 15 : 1,
-          bucketUnit: (bucketConfig)? 'MINUTE' : 'DAY'
+          bucketTime: (bucketConfig)? 1 : 1,
+          bucketUnit: (bucketConfig)? 'HOUR' : 'DAY'
         }
       }
 
@@ -255,31 +255,56 @@ export const loadData = (start: Date, end: Date) => {
 
         const res_estimated = response.filter( (data:any) => data.source === STEP_ESTIMATED);
         var dataS = [];
-        let totalMinS = 0
         let activeDay = 0;
         let inactiveDay = 0;
         const rawSteps = res_estimated[0].rawSteps;
         if(bucketConfig) {
-          const { totalMin, data, activeHour, inactiveHour } = initDailyData(rawSteps);
+          const { highData, lowData, data, activeHour, inactiveHour } = initDailyData(rawSteps);
+          const totalStep = sum(data);
           dispatch({
             type: types.LOAD_FIT_DATA_SUCCESS,
             payload: {
               data: data,
               activeTime: activeHour,
               inactiveTime: inactiveHour,
+              totalTime: activeHour+inactiveHour,
               startDate: startDate,
               endDate: endDate,
+              unit: 'h',
+              totalStep: totalStep,
+              highData: highData,
+              lowData: lowData,
+              speed: sum(data)/(activeHour||1)
             }
           });
         }else{
           dataS = initData(startDate, endDate);
+          inactiveDay = endDate.diff(startDate, 'days')+1;
+          let totalStep = 0;
+          let highData = {
+            value: -Infinity,
+            date: moment()
+          };
+          let lowData = {
+            value: Infinity,
+            date: moment()
+          }
           if (res_estimated[0].steps.length > 0) {
            // console.log(res_estimated[0].steps)
            activeDay = res_estimated[0].steps.length;
-           inactiveDay = endDate.diff(startDate, 'days')+1 - activeDay;
+           inactiveDay -= activeDay;
            res_estimated[0].steps.forEach((element: any) => {
              let index = moment(element.date).diff(startDate, 'days');
              dataS[index] = element.value;
+             totalStep += element.value;
+             if(element.value > highData.value) {
+               highData.value = element.value;
+               highData.date = element.date;
+             }
+             if(element.value < lowData.value) {
+               lowData.value = element.value;
+               lowData.date = element.date;
+             }
            });
           }
           dispatch({
@@ -288,8 +313,14 @@ export const loadData = (start: Date, end: Date) => {
               data: dataS,
               activeTime: activeDay,
               inactiveTime: inactiveDay,
+              totalTime: activeDay+inactiveDay,
               startDate: startDate,
               endDate: endDate,
+              unit: 'd',
+              totalStep: totalStep,
+              speed: totalStep/(activeDay+inactiveDay),
+              highData: highData,
+              lowData: lowData,
             }
           });
         }
@@ -315,25 +346,41 @@ function getBaseLog(x:number, y:number) {
 }
 
 function initDailyData(rawSteps: any) {
-  let totalMin = 0;
+  let totalTime = 0;
   const data = Array(24).fill(0);
   let activeHour = 0;
-  let inactiveHour = 0;
+  let inactiveHour = data.length;
+  let highData = {
+    value: -Infinity,
+    date: moment()
+  };
+  let lowData = {
+    value: Infinity,
+    date: moment()
+  }
 
   if (rawSteps.length > 0) {
     rawSteps.forEach( (item: any) => {
       const index = parseInt(moment(item.endDate).format("H"));
       data[index] += item.steps;
       if(item.steps > 0) {
-        // console.log(moment(item.endDate).format('HH:mm:ss') + '-' + moment(item.startDate).format('HH:mm:ss'))
+        // console.log(moment(item.startDate).format('HH:mm:ss') + '-' + moment(item.endDate).format('HH:mm:ss'))
+        if(item.steps > highData.value) {
+          highData.value = item.steps;
+          highData.date = item.endDate;
+        }
+        if(item.steps < lowData.value) {
+          lowData.value = item.steps;
+          lowData.date = item.endDate;
+        }
         activeHour++;
-        totalMin += moment(item.endDate).diff(moment(item.startDate), "minutes")
+        totalTime += moment(item.endDate).diff(moment(item.startDate), "minutes")
       }
     });
-    inactiveHour = data.length - activeHour;
+    inactiveHour -= activeHour;
   }
-  if (totalMin <= 0) totalMin = 1;
-  return { data, totalMin, activeHour, inactiveHour };
+  if (totalTime <= 0) totalTime = 1;
+  return { data, totalTime, activeHour, inactiveHour, highData, lowData };
 }
 
 function initWeekData(date: moment.Moment) {

@@ -6,8 +6,8 @@ import { connect } from 'react-redux';
 
 import AppText from '../components/AppText';
 import { AppColor, AppFont, AppScreen } from '../constants/AppConstant';
-import * as types from '../redux/actions/actionTypes';
-import { setGoal, loadDaily, loadWeekly, loadMonthly } from '../redux/actions/ActionCreator';
+import * as actionTypes from '../redux/actions/actionTypes';
+import { setGoal, loadDaily, loadWeekly, loadMonthly, loadData } from '../redux/actions/ActionCreator';
 import * as NavigationService from '../navigation/NavigationService';
 import AsyncStorage from '@react-native-community/async-storage';
 
@@ -26,10 +26,11 @@ interface ReloadButtonState {
 
 interface ReloadProps {
   reload: () => void;
+  loadData: () => void;
 }
 
 export function reloadRecent(func: {[key:string]: (arg?:any)=>void} ){
-  const { reload } = func;
+  const { reload, loadData } = func;
   const nestedRoute = NavigationService.getCurrentRoute();
   if(nestedRoute === undefined) return;
   const routeName = nestedRoute.name;
@@ -38,6 +39,7 @@ export function reloadRecent(func: {[key:string]: (arg?:any)=>void} ){
       reload();
       break;
     case AppScreen.OVERALL:
+      loadData(new Date(), new Date());
      break;
     default:
       //nothing
@@ -164,6 +166,7 @@ export class RefreshButton extends React.Component<ReloadProps, ReloadButtonStat
 
     reloadRecent({
       reload: this.props.reload,
+      loadData: this.props.loadData,
     });
   }
 
@@ -226,13 +229,17 @@ const mapDispatchToProps = (dispatch: any) => {
 const mapReloadToProps = (dispatch: any) => {
   return {
     reload: () => {
-      dispatch({  type: types.LOAD_FIT_DAY_START });
+      dispatch({  type: actionTypes.LOAD_FIT_DAY_START });
       dispatch(loadDaily());
-      dispatch({  type: types.LOAD_FIT_WEEK_START });
+      dispatch({  type: actionTypes.LOAD_FIT_WEEK_START });
       dispatch(loadWeekly());
-      dispatch({  type: types.LOAD_FIT_MONTH_START });
+      dispatch({  type: actionTypes.LOAD_FIT_MONTH_START });
       dispatch(loadMonthly());
     },
+    loadData: (startDate:Date, endDate:Date) => {
+      dispatch({ type: actionTypes.LOAD_FIT_DATA_START });
+      dispatch(loadData(startDate, endDate));
+    }
   }
 }
 

@@ -12,8 +12,8 @@ import { AppColor, AppScreen, AppCompSize, AppFont } from '../constants/AppConst
 import TabBarIcon from '../components/TabBarIcon';
 
 import { connect } from 'react-redux';
-import * as types from '../redux/actions/actionTypes';
-import { loadDaily, loadWeekly, loadMonthly }from '../redux/actions/ActionCreator';
+import * as actionTypes from '../redux/actions/actionTypes';
+import { loadDaily, loadWeekly, loadMonthly, loadData }from '../redux/actions/ActionCreator';
 
 type tabBarIconProps = {
   focused: boolean;
@@ -142,13 +142,17 @@ function MainTabs({ navigation, route, ...otherProps } :any) {
 const mapReloadToProps = (dispatch: any) => {
   return {
     reload: () => {
-      dispatch({  type: types.LOAD_FIT_DAY_START });
+      dispatch({  type: actionTypes.LOAD_FIT_DAY_START });
       dispatch(loadDaily());
-      dispatch({  type: types.LOAD_FIT_WEEK_START });
+      dispatch({  type: actionTypes.LOAD_FIT_WEEK_START });
       dispatch(loadWeekly());
-      dispatch({  type: types.LOAD_FIT_MONTH_START });
+      dispatch({  type: actionTypes.LOAD_FIT_MONTH_START });
       dispatch(loadMonthly());
     },
+    loadData: (startDate:Date, endDate:Date) => {
+      dispatch({ type: actionTypes.LOAD_FIT_DATA_START });
+      dispatch(loadData(startDate, endDate));
+    }
   }
 }
 

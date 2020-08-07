@@ -17,7 +17,7 @@ const INIT_DAILY_DATA = {
   daily:{
     labels: Array.from({length: 24}, (v, k) => k.toString()),
     data: Array(24).fill(0),
-    avgPerMin: 0,
+    avgPerHour: 0,
   },
   isLoading: false,
   error: null
@@ -48,10 +48,16 @@ const INIT_DATA = {
   overall: {
     labels: [1,2,3],
     data: [0,0,0],
-    activeDay: 0,
-    inactiveDay: 0,
+    activeTime: 0,
+    inactiveTime: 0,
+    totalTime: 0,
     startDate: moment(),
     endDate: moment(),
+    unit: '',
+    totalStep: 0,
+    speed: 0,
+    highData: { value: -Infinity, date: moment()  },
+    lowData: { value: Infinity, date: moment()  }
   },
   isLoading: false,
   error: null,
@@ -70,7 +76,7 @@ export const stepDailyReducer = (state = INIT_DAILY_DATA, action: any) => {
         daily: {
           ...state.daily,
           data: action.payload.data,
-          avgPerMin: action.payload.avgPerMin,
+          avgPerHour: action.payload.avgPerHour,
         },
         isLoading: false
       };
@@ -158,8 +164,14 @@ export const stepReducer = (state = INIT_DATA, action: any) => {
           data: action.payload.data,
           startDate: action.payload.startDate,
           endDate: action.payload.endDate,
-          activeTime: action.payload.activeDay,
-          inactiveTime: action.payload.inactiveDay,
+          activeTime: action.payload.activeTime,
+          inactiveTime: action.payload.inactiveTime,
+          totalTime: action.payload.totalTime,
+          unit: action.payload.unit,
+          totalStep: action.payload.totalStep,
+          speed: action.payload.speed,
+          highData: action.payload.highData,
+          lowData: action.payload.lowData
         },
         isLoading: false
       }

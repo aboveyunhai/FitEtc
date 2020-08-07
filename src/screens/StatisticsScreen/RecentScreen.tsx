@@ -33,7 +33,7 @@ interface StatState {
 export interface DailyProps {
   labels: Array<string>,
   data: Array<number>,
-  avgPerMin: number,
+  avgPerHour: number,
 }
 
 interface WeeklyProps {
@@ -47,14 +47,18 @@ interface MonthlyProps {
   endDate: string
 }
 
+const chartBackground = {
+  backgroundGradientFrom: AppColor.highlightBlueL,
+  backgroundGradientFromOpacity: 0.05,
+  backgroundGradientTo: AppColor.highlightBlueL,
+  backgroundGradientToOpacity: 0.05,
+}
+
 const barChartConfig = {
+  ...chartBackground,
   propsForLabels:{
     fontFamily: AppFont.Oxanium.light
   },
-  backgroundGradientFrom: AppColor.highlightBlue,
-  backgroundGradientFromOpacity: 0.1,
-  backgroundGradientTo: AppColor.highlightBlue,
-  backgroundGradientToOpacity: 0.1,
   color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
   fillShadowGradientOpacity: 0.8,
   barPercentage: 0.5,
@@ -73,13 +77,10 @@ const barChartConfig = {
 };
 
 const contributionChartConfig = {
+  ...chartBackground,
   propsForLabels:{
     fontFamily: AppFont.Oxanium.bold
   },
-  backgroundGradientFrom: AppColor.highlightBlue,
-  backgroundGradientFromOpacity: 0.1,
-  backgroundGradientTo: AppColor.highlightBlue,
-  backgroundGradientToOpacity: 0.1,
   color: (opacity = 1) => `rgba(26, 255, 146, ${opacity})`,
   toggleColor: `rgba(26, 255, 146, 1)`,
   chartStyle: {
@@ -108,7 +109,7 @@ class DailyChart extends React.Component<DailyProps> {
       <>
         <HeaderTag
           tagLabel={'D'}
-          tagContent={'Avg: ' + this.props.avgPerMin + '/min'}
+          tagContent={'Avg: ' + this.props.avgPerHour + '/h'}
         />
         <BarChart
           style={styles.chartContainerStyle}
@@ -337,7 +338,7 @@ class Analysis extends React.Component<StatProps,StatState> {
         {
           this.props.isLoading[0]
           ? <View style={styles.indicatorContainer}><ActivityIndicator /></View>
-          : <DailyChart data={this.props.daily.data} avgPerMin={this.props.daily.avgPerMin} labels = {this.props.daily.labels}/>
+          : <DailyChart data={this.props.daily.data} avgPerHour={this.props.daily.avgPerHour} labels = {this.props.daily.labels}/>
         }
         {
           this.props.isLoading[1]
