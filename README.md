@@ -6,7 +6,7 @@ run `npm install https://github.com/aboveyunhai/Pedoer.git`, <br>
 then execute `react-native run android`
 
 ### Motivation:
-There are already tons of well-built fitness apps around, but I'm the particular oddity who has no interest in those fitness communities, notifications, etc. 
+There are already tons of well-built fitness apps around, but I'm the particular oddity who has no interest in those fitness communities, notifications, etc. <br>
 Those also created many unnecessary bundles and huge battery comsumption<br>
 So I just want to create a **pure** pedometer app for myself and my family. Silently run in the background with minial battery usage.<br>
 
