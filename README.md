@@ -13,7 +13,6 @@ So I just want to create a **pure** pedometer app for myself and my family. Sile
 Do some **NON-SENSE** react-native UI/UX experiments for data presentation, battery comsumption check and possible RN optimization
 
 <div>
-<img src="https://github.com/aboveyunhai/Pedoer/blob/master/readMe/Screenshot_1_Pedoer.gif" height="600" />
 <img src="https://github.com/aboveyunhai/Pedoer/blob/master/readMe/Screenshot_3_Pedoer.gif" height="600" />
 <img src="https://github.com/aboveyunhai/Pedoer/blob/master/readMe/Screenshot_2_Pedoer.gif" height="600" />
 <div>
