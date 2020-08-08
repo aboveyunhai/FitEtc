@@ -371,7 +371,7 @@ function setValueBoundary(input : Animated.Value, upperBound = 100, lowerBound =
 
 export class Analysis extends React.Component<MyProps> {
   enablePan = true;
-  pan = new Animated.ValueXY({x:0, y:100});
+  pan = new Animated.ValueXY({x:0, y:BOTTOMMENU_MAIN});
   Ypos = this.pan.y._value;
 
   //reserve for clicking action
@@ -420,7 +420,7 @@ export class Analysis extends React.Component<MyProps> {
         },
         restSpeedThreshold: 100,
         restDisplacementThreshold: 40,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start(()=>{
         this.Ypos= this.Ypos<this.pan.y._value ? BOTTOMMENU_MAIN : 0;
         this.pan.setValue({x: 0, y: this.Ypos });
@@ -431,6 +431,7 @@ export class Analysis extends React.Component<MyProps> {
 
   state = {
     data: [],
+
   }
 
   componentDidMount = () => {
@@ -442,8 +443,7 @@ export class Analysis extends React.Component<MyProps> {
     GoogleFit.unsubscribeListeners();
   }
 
-  componentDidUpdate = () => {
-  }
+  componentDidUpdate = () => {}
 
   // shouldComponentUpdate = (nextProps, nextState: any) => {
   //   if(this.state.startDate !== nextState.toggle) return true;
@@ -469,7 +469,7 @@ export class Analysis extends React.Component<MyProps> {
         <View style={[styles.rowContainer, { height: 30,  marginTop: 5 }]}>
           <View><Text style={[styles.text,{color: AppColor.white}]}>
             <Text style={{color: AppColor.highlightBlue}}>From: </Text>
-            {this.props.summary.overall.startDate.format('L')}
+            <Text>{this.props.summary.overall.startDate.format('L')}</Text>
           </Text></View>
           <View><Text style={[styles.text,{color: AppColor.white}]}>
             <Text style={{color: AppColor.highlightBlue}}>To: </Text>
@@ -484,8 +484,13 @@ export class Analysis extends React.Component<MyProps> {
           panResponder={this.panResponder}
           {...this.props}
         />
-        <ScrollView
-          style={{marginBottom: TOGGLE_HEIGHT+1}}
+        <Animated.ScrollView
+          style={{
+            marginBottom: this.pan.y.interpolate({
+                inputRange: [-AppCompSize.SCREEN_H, 0, BOTTOMMENU_MAIN, AppCompSize.SCREEN_H],
+                outputRange: [BOTTOMMENU_HEIGHT, BOTTOMMENU_HEIGHT, TOGGLE_HEIGHT, TOGGLE_HEIGHT],
+              })
+          }}
         >
           <View style={styles.chartContainer}>
           {
@@ -522,9 +527,8 @@ export class Analysis extends React.Component<MyProps> {
                 (this.props.summary.isLoading === true)
                 ? <View style={styles.indicatorContainer}><ActivityIndicator /></View>
                 : <AnimatedCircularProgress
-                    duration={1000}
                     size={SQUARE_SIZE*0.8}
-                    fill={this.props.summary.overall.speed/5000}
+                    fill={this.props.summary.overall.speed/2000*100}
                     // prefill={50}
                     backgroundWidth={3}
                     dashedBackground={{ width: 3, gap: 8 }}
@@ -541,7 +545,7 @@ export class Analysis extends React.Component<MyProps> {
                           {this.props.summary.overall.speed.toFixed(0)}/{this.props.summary.overall.unit}
                         </Text>
                         <Text style={[styles.text, {color: AppColor.highlightBlue, fontSize: 13}]}>
-                          5000
+                          2000
                         </Text>
                       </>
                     )}}
@@ -599,11 +603,13 @@ export class Analysis extends React.Component<MyProps> {
               ? <View style={styles.indicatorContainer}><ActivityIndicator /></View>
               : <View style={{paddingLeft: 10}}>
                   <Text style={[styles.text, {color:AppColor.highlightOrange}]}>
-                  <Text>Total Steps: {this.props.summary.overall.totalStep}</Text>{ '\n'}
-                  <Text>{ this.props.summary.overall.highData.value }</Text>{'\n'}
-                  <Text>{ moment(this.props.summary.overall.highData.date).format("L, HH:mm:ss")}</Text>{'\n'}
-                  <Text>{ this.props.summary.overall.lowData.value }</Text>{'\n'}
-                  <Text>{ moment(this.props.summary.overall.lowData.date).format("L, HH:mm:ss")}</Text>
+                  <Text>Total Steps: {this.props.summary.overall.totalStep}</Text>{'\n'}{'\n'}
+                  <Text style={{color: AppColor.highlightBlue}}>Highest: </Text>
+                  <Text> { this.props.summary.overall.highData.value }</Text>{'\n'}
+                  <Text> { moment(this.props.summary.overall.highData.date).format("L, HH:mm:ss")}</Text>{'\n'}{'\n'}
+                  <Text style={{color: AppColor.highlightBlue}}>Lowest: </Text>
+                  <Text> { this.props.summary.overall.lowData.value }</Text>{'\n'}
+                  <Text> { moment(this.props.summary.overall.lowData.date).format("L, HH:mm:ss")}</Text>
                   </Text>
                 </View>
             }
@@ -611,7 +617,7 @@ export class Analysis extends React.Component<MyProps> {
             <View style={styles.square}>
             </View>
           </View>
-        </ScrollView>
+        </Animated.ScrollView>
       </View>
     )
   }
