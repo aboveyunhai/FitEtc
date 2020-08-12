@@ -6,6 +6,9 @@ buildscript {
         minSdkVersion = 16
         compileSdkVersion = 28
         targetSdkVersion = 28
+
+        // react-native-google-fit
+        fitnessVersion = "18.0.0"
     }
     repositories {
         google()
