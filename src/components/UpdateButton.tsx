@@ -26,10 +26,10 @@ interface ReloadButtonState {
 
 interface ReloadProps {
   reload: () => void;
-  loadData: () => void;
+  loadData: (startDate: Date, endDate: Date) => void;
 }
 
-export function reloadRecent(func: {[key:string]: (arg?:any)=>void} ){
+export function reloadRecent(func: {[key:string]: (...arg: (any)[] )=>void} ){
   const { reload, loadData } = func;
   const nestedRoute = NavigationService.getCurrentRoute();
   if(nestedRoute === undefined) return;
