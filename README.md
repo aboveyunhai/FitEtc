@@ -22,8 +22,8 @@ I currently use it to debug and help improve https://github.com/StasDoskalenko/r
 
 ### Todo:
 
-* possibly fully expand the app to full fitness data,
-* some code struction optimaziation
+* Possibly fully expand the app to for all fitness data,
+* Code structure optimaziation
 
 #
 
