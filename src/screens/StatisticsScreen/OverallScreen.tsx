@@ -116,6 +116,14 @@ const Tick = [
   },
   {
     id: 3,
+    title: '3m'
+  },
+  {
+    id: 4,
+    title: '6m'
+  },
+  {
+    id: 5,
     title: '1y'
   }
 ];
@@ -273,7 +281,9 @@ const BottomMenu = (props: any) => {
       case 0: props.loadData(today,today);return;
       case 1: props.loadData(moment(today).startOf('week'), today);return;
       case 2: props.loadData(moment(today).startOf('month'), today);return;
-      case 3: props.loadData(moment(today).startOf('year'), today);return;
+      case 3: props.loadData(moment(today).startOf('month').subtract(3, 'months'), today);return;
+      case 4: props.loadData(moment(today).startOf('month').subtract(6, 'months'), today);return;
+      case 5: props.loadData(moment(today).startOf('year'), today);return;
       default:
     }
   }
@@ -360,18 +370,24 @@ const BottomMenuConnected = connect(null, mapDispatchToProps)(BottomMenu);
 
 function setValueBoundary(input : Animated.Value, upperBound = 100, lowerBound = 0) {
     var output = input;
+      //@ts-ignore
     if(output._value > upperBound) {
       return upperBound;
     };
+      //@ts-ignore
     if(output._value < lowerBound){
       return lowerBound;
     };
+      //@ts-ignore
     return output._value;
 }
 
 export class Analysis extends React.Component<MyProps> {
   enablePan = true;
   pan = new Animated.ValueXY({x:0, y:BOTTOMMENU_MAIN});
+
+  // react native offical doc use _value but it's "private" value and not support by typescript
+  //@ts-ignore
   Ypos = this.pan.y._value;
 
   //reserve for clicking action
@@ -392,6 +408,7 @@ export class Analysis extends React.Component<MyProps> {
     onStartShouldSetPanResponder: () => this.enablePan,
     onPanResponderGrant: (evt, gestureState) => {
       if(this.enablePan){
+        //@ts-ignore
         this.pan.setOffset(this.pan.__getValue());
         this.pan.setValue({x: 0, y: 0});
       }
@@ -416,12 +433,14 @@ export class Analysis extends React.Component<MyProps> {
       Animated.spring(this.pan, {
         toValue: {
           x: 0,
+          //@ts-ignore
           y: this.Ypos<this.pan.y._value ? BOTTOMMENU_MAIN : 0
         },
         restSpeedThreshold: 100,
         restDisplacementThreshold: 40,
         useNativeDriver: false,
       }).start(()=>{
+        //@ts-ignore
         this.Ypos= this.Ypos<this.pan.y._value ? BOTTOMMENU_MAIN : 0;
         this.pan.setValue({x: 0, y: this.Ypos });
         this.enablePan = true;
@@ -512,7 +531,7 @@ export class Analysis extends React.Component<MyProps> {
               withShadow={false}
               withScrollableDot={true}
               yAxisInterval={1} // optional, defaults to 1
-              bezier={true}
+              bezier={false}
               chartConfig={chartConfig}
               innerLines={6}
               defMin={0}
@@ -605,10 +624,20 @@ export class Analysis extends React.Component<MyProps> {
                   <Text style={[styles.text, {color:AppColor.highlightOrange}]}>
                   <Text>Total Steps: {this.props.summary.overall.totalStep}</Text>{'\n'}{'\n'}
                   <Text style={{color: AppColor.highlightBlue}}>Highest: </Text>
-                  <Text> { this.props.summary.overall.highData.value }</Text>{'\n'}
+                  <Text>
+                    { this.props.summary.overall.highData.value === -Infinity
+                      ? "No Record Found"
+                      : this.props.summary.overall.highData.value
+                    }
+                  </Text>{'\n'}
                   <Text> { moment(this.props.summary.overall.highData.date).format("L, HH:mm:ss")}</Text>{'\n'}{'\n'}
                   <Text style={{color: AppColor.highlightBlue}}>Lowest: </Text>
-                  <Text> { this.props.summary.overall.lowData.value }</Text>{'\n'}
+                  <Text>
+                    { this.props.summary.overall.lowData.value === Infinity
+                      ? "No Record Found"
+                      : this.props.summary.overall.lowData.value
+                    }
+                  </Text>{'\n'}
                   <Text> { moment(this.props.summary.overall.lowData.date).format("L, HH:mm:ss")}</Text>
                   </Text>
                 </View>
