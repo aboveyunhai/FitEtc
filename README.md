@@ -5,6 +5,10 @@ A standalone React Native Pedometer App based on Googla Android APi, currenly su
 run `npm install https://github.com/aboveyunhai/Pedoer.git`, <br>
 then execute `react-native run android`
 
+**require your own api key to enable google-fit api to work**
+
+Helpful link: https://github.com/StasDoskalenko/react-native-google-fit/blob/master/docs/INSTALLATION.md
+
 ### Motivation:
 There are already tons of well-built fitness apps around, but I'm the particular oddity who has no interest in those fitness communities, notifications, etc. <br>
 Those also created many unnecessary bundles and huge battery comsumption<br>
