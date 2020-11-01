@@ -5,10 +5,11 @@ import RNBootSplash from 'react-native-bootsplash';
 
 import AppNavigator from './src/navigation/AppNavigator';
 import appStore from './src/redux/store/AppStore';
+import { auth, startRecording } from './src/redux/actions/ActionCreator';
 
 const App = () => {
   const init = async () => {
-    
+    await startRecording();
   }
   useEffect(() => {
     init().finally(() => {
