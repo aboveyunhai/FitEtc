@@ -1,6 +1,6 @@
 # FitEtc
 
-A standalone React Native Pedometer App based on Googla Android APi, currenly support Android platform only.
+A standalone React Native Pedometer App based on Google Android APi, currenly support Android platform only.
 
 run `npm install https://github.com/aboveyunhai/FitEtc.git`, <br>
 then execute `react-native run android`
