@@ -1,28 +1,29 @@
-import React from 'react';
-import {
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-} from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import React, {useEffect} from 'react';
+import {SafeAreaView, StatusBar, StyleSheet} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
 
 import MainTabNavigator from './MainTabNavigator';
-import { isMountedRef, navigationRef } from './NavigationService';
-import { AppColor } from '../constants/AppConstant';
+import {isMountedRef, navigationRef} from './NavigationService';
+import {AppColor} from '../constants/AppConstant';
 
 export default function AppNavigation() {
-  React.useEffect(() => {
-      isMountedRef.current = true;
-
-      return () => (isMountedRef.current = false);
+  //@ts-ignore
+  useEffect(() => {
+    //@ts-ignore
+    isMountedRef.current = true;
+    //@ts-ignore
+    return () => (isMountedRef.current = false);
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor={AppColor.baseDarkColor} barStyle="light-content" />
-        <NavigationContainer ref={navigationRef} >
-          <MainTabNavigator/>
-        </NavigationContainer>
+      <StatusBar
+        backgroundColor={AppColor.baseDarkColor}
+        barStyle="light-content"
+      />
+      <NavigationContainer ref={navigationRef}>
+        <MainTabNavigator />
+      </NavigationContainer>
     </SafeAreaView>
   );
 }

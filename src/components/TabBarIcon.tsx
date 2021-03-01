@@ -2,31 +2,31 @@ import React from 'react';
 import ADIcon from 'react-native-vector-icons/AntDesign';
 import MCIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { AppColor } from '../constants/AppConstant';
+import {AppColor} from '../constants/AppConstant';
 
 interface IconProps {
-  name: string,
-  size: number,
-  focused?: boolean,
-  color?: string,
-  iconColor?: string,
-  type?: 'MaterialCommunity',
-  style?: {},
+  name: string;
+  size: number;
+  focused?: boolean;
+  color?: string;
+  iconColor?: string;
+  type?: 'MaterialCommunity';
+  style?: {};
   onPress?: () => any;
 }
 
-export default function TabBarIcon(props:IconProps) {
-  return (
-    <>
-      {renderIcon(props)}
-    </>
-  )
+export default function TabBarIcon(props: IconProps) {
+  return <>{renderIcon(props)}</>;
 }
 
 function renderIcon(props: IconProps) {
-  const color =  props.color
-              ? props.color
-              : props.focused ? AppColor.tabIconSelected: (props.iconColor)? props.iconColor: AppColor.tabIconDefault;
+  const color = props.color
+    ? props.color
+    : props.focused
+    ? AppColor.tabIconSelected
+    : props.iconColor
+    ? props.iconColor
+    : AppColor.tabIconDefault;
   switch (props.type) {
     case 'MaterialCommunity':
       return (
@@ -36,8 +36,12 @@ function renderIcon(props: IconProps) {
           style={props.style}
           color={
             props.color
-            ? props.color
-            : props.focused ? AppColor.tabIconSelected: (props.iconColor)? props.iconColor: AppColor.tabIconDefault
+              ? props.color
+              : props.focused
+              ? AppColor.tabIconSelected
+              : props.iconColor
+              ? props.iconColor
+              : AppColor.tabIconDefault
           }
           onPress={props.onPress}
         />

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as types from './actionTypes';
 import {Alert} from 'react-native';
 import GoogleFit, {
@@ -30,7 +31,7 @@ const runOptions = {
     // Scopes.FITNESS_LOCATION_READ,
     // Scopes.FITNESS_LOCATION_WRITE,
     Scopes.FITNESS_SLEEP_READ,
-    Scopes.FITNESS_SLEEP_WRITE
+    Scopes.FITNESS_SLEEP_WRITE,
   ],
 };
 
@@ -93,7 +94,7 @@ export const setGoal = (newGoal: string) => {
           newGoal,
         });
       })
-      .catch((error: any) => {});
+      .catch((_error: any) => {});
   };
 };
 
@@ -104,8 +105,12 @@ export const loadDaily = () => {
     if (isAuth) {
       const today = moment();
       const options: StepOptions = {
-        startDate: moment(today).startOf('day').toISOString(),
-        endDate: moment(today).endOf('day').toISOString(),
+        startDate: moment(today)
+          .startOf('day')
+          .toISOString(),
+        endDate: moment(today)
+          .endOf('day')
+          .toISOString(),
         bucketInterval: 30,
         bucketUnit: 'MINUTE',
       };
@@ -119,28 +124,27 @@ export const loadDaily = () => {
       // const nutritions = await GoogleFit.getDailyNutritionSamples(options);
       // console.log(nutritions);
 
+      //   const opt = {
+      //     mealType: MealType.BREAKFAST,
+      //     foodName: "banana",
+      //     date: moment().format(), //equals to new Date().toISOString()
+      //     nutrients: {
+      //         [Nutrient.TOTAL_FAT]: 0.4,
+      //         [Nutrient.SODIUM]: 1,
+      //         [Nutrient.SATURATED_FAT]: 0.1,
+      //         [Nutrient.PROTEIN]: 1.3,
+      //         [Nutrient.TOTAL_CARBS]: 27.0,
+      //         [Nutrient.CHOLESTEROL]: 0,
+      //         [Nutrient.CALORIES]: 105,
+      //         [Nutrient.SUGAR]: 14,
+      //         [Nutrient.DIETARY_FIBER]: 3.1,
+      //         [Nutrient.POTASSIUM]: 422,
+      //     }
+      // } as FoodIntake;
 
-    //   const opt = {
-    //     mealType: MealType.BREAKFAST,
-    //     foodName: "banana",
-    //     date: moment().format(), //equals to new Date().toISOString()
-    //     nutrients: {
-    //         [Nutrient.TOTAL_FAT]: 0.4,
-    //         [Nutrient.SODIUM]: 1,
-    //         [Nutrient.SATURATED_FAT]: 0.1,
-    //         [Nutrient.PROTEIN]: 1.3,
-    //         [Nutrient.TOTAL_CARBS]: 27.0,
-    //         [Nutrient.CHOLESTEROL]: 0,
-    //         [Nutrient.CALORIES]: 105,
-    //         [Nutrient.SUGAR]: 14,
-    //         [Nutrient.DIETARY_FIBER]: 3.1,
-    //         [Nutrient.POTASSIUM]: 422,
-    //     }
-    // } as FoodIntake;
-
-    //   GoogleFit.saveFood(opt, (err, res) => {
-    //     console.log(err, res);
-    //   })
+      //   GoogleFit.saveFood(opt, (err, res) => {
+      //     console.log(err, res);
+      //   })
 
       // const opt = {
       //   unit: "pound", // required; default 'kg'
@@ -250,8 +254,12 @@ export const loadWeekly = () => {
     if (isAuth) {
       const today = moment();
       const options: StepOptions = {
-        startDate: moment(today).startOf('week').toISOString(),
-        endDate: moment(today).endOf('week').toISOString(),
+        startDate: moment(today)
+          .startOf('week')
+          .toISOString(),
+        endDate: moment(today)
+          .endOf('week')
+          .toISOString(),
         bucketInterval: 1,
         bucketUnit: 'DAY',
       };
@@ -493,7 +501,7 @@ function initDailyData(rawSteps: any) {
 
   if (rawSteps.length > 0) {
     rawSteps.forEach((item: any) => {
-      const index = parseInt(moment(item.endDate).format('H'));
+      const index = parseInt(moment(item.endDate).format('H'), 10);
       data[index] += item.steps;
       if (item.steps > 0) {
         // console.log(moment(item.startDate).format('HH:mm:ss') + '-' + moment(item.endDate).format('HH:mm:ss'))
