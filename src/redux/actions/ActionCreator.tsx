@@ -11,6 +11,7 @@ const WEEK_OFFSET = 105; // 15 weeks includes currentWeek
 const runOptions = {
   scopes: [
     Scopes.FITNESS_ACTIVITY_READ,
+    Scopes.FITNESS_ACTIVITY_WRITE,
     Scopes.FITNESS_BODY_READ,
     Scopes.FITNESS_LOCATION_READ,
   ]
@@ -84,11 +85,13 @@ export const loadDaily = () => {
       const options = {
         startDate: moment(today).startOf('day'),
         endDate: moment(today).endOf('day'),
-        configs:{
-          bucketTime: 1,
-          bucketUnit: 'HOUR'
-        }
+        bucketTime: 1,
+        bucketUnit: "MINUTE"
       }
+
+      GoogleFit.getActivitySamples(options).then((response: any)=> {
+        console.log(response)
+      });
 
       GoogleFit.getDailyStepCountSamples(options).then
       ((response: any) => {
@@ -128,10 +131,8 @@ export const loadWeekly = () => {
      const options = {
        startDate: moment(today).startOf('week'),
        endDate: moment(today).endOf('week'),
-       configs:{
-         bucketTime: 1,
-         bucketUnit: 'DAY'
-       }
+       bucketTime: 1,
+       bucketUnit: 'DAY'
      }
 
      GoogleFit.getDailyStepCountSamples(options).then
@@ -186,10 +187,8 @@ export const loadMonthly = () => {
       const options = {
         startDate: startDate,
         endDate: endDate,
-        configs:{
-          bucketTime: 1,
-          bucketUnit: 'DAY'
-        }
+        bucketTime: 1,
+        bucketUnit: 'DAY'
       }
 
       GoogleFit.getDailyStepCountSamples(options).then
@@ -245,15 +244,14 @@ export const loadData = (start: Date, end: Date) => {
       const options = {
         startDate: startDate,
         endDate: endDate,
-        configs:{
-          bucketTime: (bucketConfig)? 1 : 1,
-          bucketUnit: (bucketConfig)? 'HOUR' : 'DAY'
-        }
+        bucketTime: (bucketConfig)? 1 : 1,
+        bucketUnit: (bucketConfig)? 'HOUR' : 'DAY'
       }
 
       GoogleFit.getDailyStepCountSamples(options).then((response)=>{
 
         const res_estimated = response.filter( (data:any) => data.source === STEP_ESTIMATED);
+
         var dataS = [];
         let activeDay = 0;
         let inactiveDay = 0;
