@@ -1,5 +1,5 @@
 {
-  "name": "Pedoer",
+  "name": "FitEtc",
   "version": "0.0.1",
   "private": true,
   "author": {
@@ -36,6 +36,7 @@
     "react-native-gesture-handler": "^1.6.1",
     "react-native-google-fit": "^0.18.2",
     "react-native-reanimated": "^1.9.0",
+    "react-native-rename": "^2.9.0",
     "react-native-safe-area-context": "^1.0.2",
     "react-native-screens": "^2.9.0",
     "react-native-snap-carousel": "^3.9.1",

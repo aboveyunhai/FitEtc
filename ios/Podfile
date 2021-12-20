@@ -1,8 +1,8 @@
 platform :ios, '9.0'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-target 'Pedoer' do
-  # Pods for Pedoer
+target 'FitEtc' do
+  # Pods for FitEtc
   pod 'FBLazyVector', :path => "../node_modules/react-native/Libraries/FBLazyVector"
   pod 'FBReactNativeSpec', :path => "../node_modules/react-native/Libraries/FBReactNativeSpec"
   pod 'RCTRequired', :path => "../node_modules/react-native/Libraries/RCTRequired"
@@ -34,7 +34,7 @@ target 'Pedoer' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
-  target 'PedoerTests' do
+  target 'FitEtcTests' do
     inherit! :search_paths
     # Pods for testing
   end
@@ -42,10 +42,10 @@ target 'Pedoer' do
   use_native_modules!
 end
 
-target 'Pedoer-tvOS' do
-  # Pods for Pedoer-tvOS
+target 'FitEtc-tvOS' do
+  # Pods for FitEtc-tvOS
 
-  target 'Pedoer-tvOSTests' do
+  target 'FitEtc-tvOSTests' do
     inherit! :search_paths
     # Pods for testing
   end
