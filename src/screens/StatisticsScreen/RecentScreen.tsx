@@ -131,7 +131,7 @@ class DailyChart extends React.Component<DailyProps> {
              },
             ],
           }}
-          hideLabelsAtIndex={Array.from({length: 24}, (v, k) => (k)%3 === 0 ? null : k) }
+          hidePointsAtIndex={Array.from({length: 24}, (v, k) => (k) % 3 === 0 ? null : k) }
           width={SCREEN_WIDTH*.9}
           height={GRAPH_HEIGHT+20}
           yAxisLabel=""

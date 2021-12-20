@@ -89,10 +89,6 @@ export const loadDaily = () => {
         bucketUnit: "MINUTE"
       }
 
-      GoogleFit.getActivitySamples(options).then((response: any)=> {
-        console.log(response)
-      });
-
       GoogleFit.getDailyStepCountSamples(options).then
       ((response: any) => {
         const res_estimated = response.filter( (data:any) => data.source === STEP_ESTIMATED);
